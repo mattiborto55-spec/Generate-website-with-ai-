@@ -428,7 +428,10 @@
   gap: clamp(2rem, 4vw, 3rem);
   grid-template-columns: repeat(2, 1fr);
 }
-@media (min-width: 900px) { .stats__grid { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 900px) {
+  .stats__grid { grid-template-columns: repeat(4, 1fr); }
+  .stats__grid--three { grid-template-columns: repeat(3, 1fr); }
+}
 .stats__grid li { display: grid; gap: 0.5rem; }
 .stats__num {
   font-family: var(--display);
@@ -437,6 +440,14 @@
   letter-spacing: -0.04em;
   color: var(--ink);
 }
+/* Le voci che non sono numeri restano leggibili: il display a 6rem serve
+   alle cifre, non alle parole. */
+.stats__num--word {
+  font-size: clamp(1.8rem, 3.4vw, 3rem);
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}
+
 .stats__label {
   font-size: var(--fs-small);
   letter-spacing: 0.18em;
@@ -465,7 +476,14 @@
   transition: border-color var(--d) var(--ease), background-color var(--d) var(--ease);
 }
 .review:hover { border-color: rgba(34, 211, 238, 0.35); background: var(--glass-strong); }
-.review__stars { color: var(--flame); letter-spacing: 0.25em; margin-bottom: 1.2rem; }
+.review__source {
+  margin-bottom: 1.2rem;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--flame);
+}
 .review blockquote {
   margin: 0 0 1.6rem;
   font-size: clamp(1rem, 1.35vw, 1.15rem);

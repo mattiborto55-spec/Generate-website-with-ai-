@@ -1,8 +1,8 @@
 {
-  "name": "carbonio-studio",
+  "name": "autostop-officina",
   "version": "1.0.0",
   "private": true,
-  "description": "CARBONIO — Detailing & Wrapping Studio, Modena. Sito one-page 3D real-time.",
+  "description": "Autofficina Autostop, Maranello (MO). Sito one-page 3D real-time.",
   "type": "module",
   "scripts": {
     "dev": "vite",

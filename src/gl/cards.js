@@ -12,12 +12,12 @@ import { createPaintMaterial } from './paint.js';
  */
 
 const OBJECTS = {
-  // goccia: il coating è idrorepellenza
-  coating: () => new THREE.SphereGeometry(0.95, 64, 48),
-  // tampone da lucidatura
-  detailing: () => new THREE.TorusGeometry(0.72, 0.3, 32, 96),
-  // foglio di pellicola che si incurva
-  ppf: () => {
+  // pneumatico
+  gomme: () => new THREE.TorusGeometry(0.72, 0.3, 32, 96),
+  // cristallo di freddo: l'aria condizionata
+  clima: () => new THREE.IcosahedronGeometry(0.95, 1),
+  // foglio: il tagliando della revisione
+  revisione: () => {
     const g = new THREE.PlaneGeometry(2.2, 1.5, 48, 32);
     const p = g.attributes.position;
     for (let i = 0; i < p.count; i++) {
@@ -28,13 +28,13 @@ const OBJECTS = {
     g.computeVertexNormals();
     return g;
   },
-  // nastro continuo: il wrapping avvolge
-  wrapping: () => new THREE.TorusKnotGeometry(0.62, 0.21, 160, 24, 2, 3),
-  // rotolo di materiale per gli interni
-  interni: () =>
+  // nodo continuo: le curve di una mappatura
+  mappatura: () => new THREE.TorusKnotGeometry(0.62, 0.21, 160, 24, 2, 3),
+  // bombola: impianti GPL e metano
+  gas: () =>
     new THREE.LatheGeometry(
       [
-        [0, -0.75], [0.5, -0.75], [0.62, -0.62], [0.62, 0.62], [0.5, 0.75], [0, 0.75]
+          [0, -0.8], [0.42, -0.8], [0.55, -0.66], [0.55, 0.66], [0.42, 0.8], [0, 0.8]
       ].map(([x, y]) => new THREE.Vector2(x, y)),
       48
     )
@@ -43,11 +43,11 @@ const OBJECTS = {
 // Tinte più chiare del nero della carrozzeria: dentro un box di 130px un
 // oggetto nero su fondo nero non si vede.
 const TINTS = {
-  coating: 0x8fa3bd,
-  detailing: 0x6f7681,
-  ppf: 0xa9b4c4,
-  wrapping: 0xc2612c,
-  interni: 0x4a3f3a
+  gomme: 0x4a4e56,
+  clima: 0x8fb6cd,
+  revisione: 0xa9b4c4,
+  mappatura: 0xc2612c,
+  gas: 0x9aa3b2
 };
 
 export class CardScenes {
@@ -72,18 +72,18 @@ export class CardScenes {
 
   /** Collega un elemento DOM (il box in cima alla card) a un oggetto 3D. */
   add(el, kind) {
-    const geometry = (OBJECTS[kind] || OBJECTS.coating)();
+    const geometry = (OBJECTS[kind] || OBJECTS.gomme)();
     const { material } = createPaintMaterial({
       color: TINTS[kind] ?? 0x1e2229,
-      roughness: kind === 'interni' ? 0.55 : 0.22,
-      metalness: kind === 'interni' ? 0.2 : 1,
-      flake: kind === 'interni' ? 0.02 : 0.06,
+      roughness: kind === 'gomme' ? 0.72 : 0.22,
+      metalness: kind === 'gomme' ? 0.05 : 1,
+      flake: kind === 'gomme' ? 0.015 : 0.06,
       envMapIntensity: 1.7
     });
 
     // Il foglio di pellicola è una superficie aperta: senza DoubleSide sparisce
     // per metà rotazione.
-    if (kind === 'ppf') material.side = THREE.DoubleSide;
+    if (kind === 'revisione') material.side = THREE.DoubleSide;
 
     const scene = new THREE.Scene();
     scene.environment = this.env;

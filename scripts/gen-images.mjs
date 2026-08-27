@@ -1,8 +1,8 @@
 /**
- * Generatore di asset visivi per CARBONIO Studio.
+ * Generatore di asset visivi per Autofficina Autostop.
  *
  * Non usiamo foto stock: ogni immagine è una composizione automotive astratta
- * (carrozzeria, riflessi, cerchi, fari, schiuma, carbonio) disegnata in SVG e
+ * (battistrada, cerchi, manometro, bombola, curve di potenza) disegnata in SVG e
  * rasterizzata in WebP con sharp. Il risultato è coerente con la palette del
  * sito, pesa pochissimo ed è riproducibile: `npm run images`.
  *
@@ -237,6 +237,146 @@ function wetFloor(w, h, o = {}) {
   };
 }
 
+
+/**
+ * Battistrada visto in prospettiva. `wear` va da 0 (nuovo) a 1 (al limite):
+ * cambiano profondità dei canali, contrasto e lucidità della gomma, non la
+ * geometria — così le due versioni si sovrappongono nello slider prima/dopo.
+ */
+function tread(w, h, o = {}) {
+  const { id = 'td', wear = 0, rows = 9 } = o;
+  const rand = rng(23);
+  const depth = 1 - wear;
+  const topW = 0.34 + wear * 0.02;   // prospettiva: stretto in alto
+  const botW = 1.02;
+  const yTop = 0.16 * h;
+  const yBot = 1.02 * h;
+
+  // interpolazione lineare fra il bordo alto e quello basso
+  const edge = (t, side) => {
+    const half = (topW + (botW - topW) * t) * 0.5;
+    return w * (0.5 + side * half);
+  };
+
+  let grooves = '';
+  const lanes = [-0.62, -0.21, 0.21, 0.62];
+  for (let i = 0; i < lanes.length; i++) {
+    const k = lanes[i];
+    const gw = (0.052 + 0.03 * depth);
+    const p0l = edge(0, k - gw), p0r = edge(0, k + gw);
+    const p1l = edge(1, (k - gw) * 1.02), p1r = edge(1, (k + gw) * 1.02);
+    grooves += `<path d="M ${r2(p0l)} ${r2(yTop)} L ${r2(p0r)} ${r2(yTop)} L ${r2(p1r)} ${r2(yBot)} L ${r2(p1l)} ${r2(yBot)} Z" fill="url(#${id}groove)"/>`;
+    // spigolo illuminato: sparisce man mano che la gomma si consuma
+    grooves += `<path d="M ${r2(p0r)} ${r2(yTop)} L ${r2(p1r)} ${r2(yBot)}" stroke="#FFFFFF" stroke-opacity="${r2(0.06 + 0.16 * depth)}" stroke-width="${r2(1 + depth)}" fill="none"/>`;
+  }
+
+  // tagli trasversali
+  let sipes = '';
+  for (let i = 0; i < rows; i++) {
+    const t = i / (rows - 1);
+    const y = yTop + (yBot - yTop) * Math.pow(t, 1.35);
+    const tilt = h * 0.012 * (1 + t);
+    sipes += `<path d="M ${r2(edge(t, -0.95))} ${r2(y)} L ${r2(edge(t, 0.95))} ${r2(y - tilt)}"
+      stroke="#000000" stroke-opacity="${r2(0.35 + 0.4 * depth)}" stroke-width="${r2((1.4 + 2.6 * depth) * (0.5 + t))}" fill="none"/>`;
+  }
+
+  // La gomma consumata è più chiara e lucida: la superficie si è levigata.
+  const defs = `<linearGradient id="${id}rub" x1="14%" y1="0%" x2="86%" y2="100%">
+      <stop offset="0" stop-color="#1c1e24"/>
+      <stop offset="0.32" stop-color="${wear > 0.5 ? '#4a4e57' : '#383c44'}"/>
+      <stop offset="0.62" stop-color="${wear > 0.5 ? '#3a3e46' : '#282b31'}"/>
+      <stop offset="1" stop-color="#0d0e11"/></linearGradient>
+    <linearGradient id="${id}sheen" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="0.35" stop-color="#FFFFFF" stop-opacity="${r2(0.1 + wear * 0.16)}"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient>
+    <linearGradient id="${id}groove" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0" stop-color="#000000" stop-opacity="${r2(0.6 + 0.38 * depth)}"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="${r2(0.42 + 0.5 * depth)}"/></linearGradient>`;
+
+  const body = `<path d="M ${r2(edge(0, -1))} ${r2(yTop)} L ${r2(edge(0, 1))} ${r2(yTop)} L ${r2(edge(1, 1))} ${r2(yBot)} L ${r2(edge(1, -1))} ${r2(yBot)} Z" fill="url(#${id}rub)"/>
+    ${grooves}${sipes}
+    <path d="M ${r2(edge(0, -1))} ${r2(yTop)} L ${r2(edge(0, 1))} ${r2(yTop)} L ${r2(edge(1, 1))} ${r2(yBot)} L ${r2(edge(1, -1))} ${r2(yBot)} Z" fill="url(#${id}sheen)"/>`;
+  return { defs, body };
+}
+
+/** Manometro: quadrante scuro, lancetta, vetro. Per il servizio clima. */
+function gauge(w, h, o = {}) {
+  const { id = 'gg', cx = 0.5, cy = 0.5, r = 0.3, needle = -38, accent = PALETTE.volt } = o;
+  const CX = cx * w, CY = cy * h, R = r * Math.min(w, h);
+  let ticks = '';
+  for (let i = 0; i <= 40; i++) {
+    const a = (-215 + (i / 40) * 250) * (Math.PI / 180);
+    const big = i % 5 === 0;
+    const r1 = R * (big ? 0.72 : 0.8);
+    ticks += `<path d="M ${r2(CX + Math.cos(a) * r1)} ${r2(CY + Math.sin(a) * r1)} L ${r2(CX + Math.cos(a) * R * 0.88)} ${r2(CY + Math.sin(a) * R * 0.88)}"
+      stroke="#E8ECF5" stroke-opacity="${big ? 0.75 : 0.3}" stroke-width="${big ? 2.4 : 1.2}"/>`;
+  }
+  const na = needle * (Math.PI / 180);
+  return {
+    defs: `<radialGradient id="${id}face" cx="42%" cy="34%" r="72%">
+        <stop offset="0" stop-color="#23262d"/><stop offset="0.7" stop-color="#111318"/>
+        <stop offset="1" stop-color="#08090b"/></radialGradient>
+      <linearGradient id="${id}ring" x1="0%" y1="0%" x2="80%" y2="100%">
+        <stop offset="0" stop-color="#EDF1F8"/><stop offset="0.45" stop-color="#5C6270"/>
+        <stop offset="1" stop-color="#1B1E24"/></linearGradient>`,
+    body: `<circle cx="${r2(CX)}" cy="${r2(CY)}" r="${r2(R * 1.08)}" fill="none" stroke="url(#${id}ring)" stroke-width="${r2(R * 0.13)}"/>
+      <circle cx="${r2(CX)}" cy="${r2(CY)}" r="${r2(R)}" fill="url(#${id}face)"/>
+      ${ticks}
+      <path d="M ${r2(CX - R * 0.85)} ${r2(CY - R * 0.35)} A ${r2(R * 0.92)} ${r2(R * 0.92)} 0 0 1 ${r2(CX - R * 0.2)} ${r2(CY - R * 0.9)}"
+        fill="none" stroke="${accent}" stroke-opacity="0.8" stroke-width="${r2(R * 0.06)}"/>
+      <path d="M ${r2(CX)} ${r2(CY)} L ${r2(CX + Math.cos(na) * R * 0.82)} ${r2(CY + Math.sin(na) * R * 0.82)}"
+        stroke="${PALETTE.orange}" stroke-width="${r2(R * 0.045)}" stroke-linecap="round"/>
+      <circle cx="${r2(CX)}" cy="${r2(CY)}" r="${r2(R * 0.09)}" fill="#D8DCE4"/>
+      <ellipse cx="${r2(CX - R * 0.3)}" cy="${r2(CY - R * 0.42)}" rx="${r2(R * 0.55)}" ry="${r2(R * 0.3)}" fill="#FFFFFF" opacity="0.05" transform="rotate(-28 ${r2(CX)} ${r2(CY)})"/>`
+  };
+}
+
+/** Bombola cilindrica con valvola: impianti GPL e metano. */
+function tank(w, h, o = {}) {
+  const { id = 'tk', cx = 0.5, cy = 0.54, len = 0.62, rad = 0.17, rot = -14 } = o;
+  const L = len * w, R = rad * h;
+  return {
+    defs: `<linearGradient id="${id}body" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0" stop-color="#1A1D23"/><stop offset="0.3" stop-color="#7C8391"/>
+        <stop offset="0.44" stop-color="#D6DCE6"/><stop offset="0.62" stop-color="#5A606C"/>
+        <stop offset="1" stop-color="#0E1014"/></linearGradient>`,
+    body: `<g transform="translate(${r2(cx * w)} ${r2(cy * h)}) rotate(${rot})">
+      <rect x="${r2(-L / 2)}" y="${r2(-R)}" width="${r2(L)}" height="${r2(R * 2)}" rx="${r2(R)}" fill="url(#${id}body)"/>
+      <rect x="${r2(-L / 2 + L * 0.16)}" y="${r2(-R)}" width="${r2(L * 0.06)}" height="${r2(R * 2)}" fill="#000000" opacity="0.35"/>
+      <rect x="${r2(L / 2 - L * 0.22)}" y="${r2(-R)}" width="${r2(L * 0.06)}" height="${r2(R * 2)}" fill="#000000" opacity="0.35"/>
+      <rect x="${r2(L / 2 - 6)}" y="${r2(-R * 0.34)}" width="${r2(L * 0.13)}" height="${r2(R * 0.68)}" rx="4" fill="#3B4049"/>
+      <circle cx="${r2(L / 2 + L * 0.13)}" cy="0" r="${r2(R * 0.34)}" fill="${PALETTE.orange}" opacity="0.9"/>
+      <rect x="${r2(-L / 2)}" y="${r2(-R * 0.06)}" width="${r2(L)}" height="${r2(R * 0.12)}" fill="#FFFFFF" opacity="0.16"/>
+    </g>`
+  };
+}
+
+/** Curve di potenza su griglia: mappatura centraline. */
+function curve(w, h, o = {}) {
+  const { id = 'cv' } = o;
+  let grid = '';
+  for (let i = 1; i < 8; i++) grid += `<path d="M ${r2((i / 8) * w)} 0 L ${r2((i / 8) * w)} ${h}" stroke="#20242b" stroke-width="1"/>`;
+  for (let i = 1; i < 6; i++) grid += `<path d="M 0 ${r2((i / 6) * h)} L ${w} ${r2((i / 6) * h)}" stroke="#20242b" stroke-width="1"/>`;
+
+  const line = (peak, drop, color, width, op) => {
+    let d = `M 0 ${r2(h * 0.92)}`;
+    for (let i = 1; i <= 40; i++) {
+      const t = i / 40;
+      const y = h * (0.92 - peak * Math.pow(Math.sin(Math.PI * Math.min(t * drop, 1)), 0.85));
+      d += ` L ${r2(t * w)} ${r2(y)}`;
+    }
+    return `<path d="${d}" fill="none" stroke="${color}" stroke-opacity="${op}" stroke-width="${width}" stroke-linecap="round"/>`;
+  };
+
+  return {
+    defs: '',
+    body: `${grid}
+      ${line(0.5, 0.78, PALETTE.chrome, 2, 0.35)}
+      ${line(0.68, 0.86, PALETTE.orange, 3.4, 1)}`
+  };
+}
+
 const stack = (...parts) => ({
   defs: parts.map((p) => p.defs).join(''),
   body: parts.map((p) => p.body).join('')
@@ -266,129 +406,82 @@ const SCENES = {
     return { base: s, glow: gl };
   },
 
-  before: (w, h) => {
-    // Vernice ossidata: micrograffi circolari SOLO sulla lamiera, riflesso
-    // slavato e contrasto compresso. Stessa inquadratura di `after`.
-    const rand = rng(11);
-    const panel = bodyPanel(w, h, { id: 'b1', top: 0.2, swell: 0.16, peak: 0.4, angle: 98, intensity: 0.68 });
-    const panelPath = `M-40 ${r2(0.2 * h + 0.16 * h * 0.9)} C ${r2(w * 0.22)} ${r2(0.2 * h - 0.16 * h)}, ${r2(w * 0.62)} ${r2(0.2 * h - 0.16 * h * 0.35)}, ${w + 40} ${r2(0.2 * h + 0.16 * h * 0.55)} L ${w + 40} ${r2(1.06 * h)} L -40 ${r2(1.06 * h)} Z`;
-
-    let swirls = '';
-    for (let i = 0; i < 320; i++) {
-      const cx = rand() * w, cy = h * (0.3 + rand() * 0.72), rr = (6 + rand() * 30) * (w / 1600);
-      const a0 = rand() * 6.28, sweep = 2 + rand() * 3.2;
-      const x1 = cx + Math.cos(a0) * rr, y1 = cy + Math.sin(a0) * rr * 0.5;
-      const x2 = cx + Math.cos(a0 + sweep) * rr, y2 = cy + Math.sin(a0 + sweep) * rr * 0.5;
-      swirls += `<path d="M ${r2(x1)} ${r2(y1)} A ${r2(rr)} ${r2(rr * 0.5)} 0 ${sweep > 3.14 ? 1 : 0} 1 ${r2(x2)} ${r2(y2)}" fill="none" stroke="#D6DCE8" stroke-opacity="${r2(0.09 + rand() * 0.13)}" stroke-width="${r2(0.9 + rand() * 1.3)}"/>`;
-    }
-    const s = stack(
-      ambient(w, h, { cx: 0.45, cy: 0.4, tint: '#16181D', power: 0.62 }),
-      panel,
-      streak(w, h, { id: 'bs1', x: 0.5, y: 0.36, len: 1.5, thick: 0.16, rot: -6, op: 0.09 }),
-      { defs: `<clipPath id="bclip"><path d="${panelPath}"/></clipPath>`, body: `<g clip-path="url(#bclip)">${swirls}<rect width="${w}" height="${h}" fill="#4A4E58" opacity="0.1"/></g>` },
-      { defs: '', body: `<rect width="${w}" height="${h}" fill="#0A0A0B" opacity="0.14"/>` },
-      wetFloor(w, h, { y: 0.8, op: 0.06 })
-    );
-    return { base: s, glow: { defs: '', body: '' } };
-  },
-
-  after: (w, h) => {
-    const s = stack(
-      ambient(w, h, { cx: 0.45, cy: 0.4, tint: '#1D2027', power: 1 }),
-      bodyPanel(w, h, { id: 'a1', top: 0.2, swell: 0.16, peak: 0.4, angle: 98, intensity: 1 }),
-      streak(w, h, { id: 'as1', x: 0.5, y: 0.3, len: 1.6, thick: 0.018, rot: -6, op: 0.95 }),
-      streak(w, h, { id: 'as2', x: 0.48, y: 0.44, len: 1.3, thick: 0.008, rot: -4, op: 0.5 }),
-      glow(w, h, { id: 'ag', x: 0.8, y: 0.28, r: 0.26, color: PALETTE.orange, op: 0.3 }),
-      wetFloor(w, h, { y: 0.8, op: 0.26 })
-    );
-    const gl = stack(streak(w, h, { id: 'ag1', x: 0.5, y: 0.3, len: 1.5, thick: 0.016, rot: -6, op: 1 }));
-    return { base: s, glow: gl };
-  },
-
-  'work-01': (w, h) => ({ // Porsche 911 — ceramic coating
+  // Slider prima/dopo: stesso battistrada, consumato e nuovo.
+  before: (w, h) => ({
     base: stack(
-      ambient(w, h, { cx: 0.55, cy: 0.35, tint: '#1B1E25' }),
-      bodyPanel(w, h, { id: 'w1', top: 0.3, swell: 0.2, peak: 0.36, angle: 104 }),
-      streak(w, h, { id: 'w1s', x: 0.5, y: 0.4, len: 1.5, thick: 0.02, rot: -9, op: 0.9 }),
-      glow(w, h, { id: 'w1g', x: 0.2, y: 0.72, r: 0.3, color: PALETTE.orange, op: 0.22 }),
-      wetFloor(w, h, { y: 0.7, op: 0.24 })
-    ),
-    glow: stack(streak(w, h, { id: 'w1q', x: 0.5, y: 0.4, len: 1.4, thick: 0.018, rot: -9, op: 1 }))
-  }),
-
-  'work-02': (w, h) => ({ // BMW M4 — PPF frontale
-    base: stack(
-      ambient(w, h, { cx: 0.5, cy: 0.5, tint: '#171A20' }),
-      bodyPanel(w, h, { id: 'w2', top: 0.62, swell: 0.14, peak: 0.46, angle: 100 }),
-      headlamp(w, h, { id: 'w2h', x: 0.55, y: 0.42, s: 0.72, rot: -7 }),
-      glow(w, h, { id: 'w2g', x: 0.55, y: 0.42, r: 0.32, color: PALETTE.cyan, op: 0.2 })
-    ),
-    glow: stack(headlamp(w, h, { id: 'w2hq', x: 0.55, y: 0.42, s: 0.72, rot: -7 }))
-  }),
-
-  'work-03': (w, h) => ({ // Audi RS6 — wrapping satinato
-    base: stack(
-      ambient(w, h, { cx: 0.4, cy: 0.4, tint: '#191B21' }),
-      bodyPanel(w, h, { id: 'w3', top: 0.34, swell: 0.15, peak: 0.5, angle: 88, intensity: 0.55 }),
-      streak(w, h, { id: 'w3s', x: 0.5, y: 0.46, len: 1.6, thick: 0.09, rot: -4, op: 0.16 }),
-      glow(w, h, { id: 'w3g', x: 0.82, y: 0.7, r: 0.3, color: PALETTE.cyan, op: 0.14 }),
-      wetFloor(w, h, { y: 0.78, op: 0.12 })
+      ambient(w, h, { cx: 0.5, cy: 0.28, tint: '#22252c', power: 1 }),
+      tread(w, h, { id: 'tw', wear: 1 }),
+      streak(w, h, { id: 'tws', x: 0.5, y: 0.34, len: 1.3, thick: 0.2, rot: -3, op: 0.05 })
     ),
     glow: { defs: '', body: '' }
   }),
 
-  'work-04': (w, h) => ({ // Tesla Model 3 — detailing completo
+  after: (w, h) => ({
     base: stack(
-      ambient(w, h, { cx: 0.5, cy: 0.42, tint: '#1A1D24' }),
-      bodyPanel(w, h, { id: 'w4', top: 0.4, swell: 0.12, peak: 0.42, angle: 100 }),
-      foam(w, h, 5, 30),
-      streak(w, h, { id: 'w4s', x: 0.5, y: 0.42, len: 1.4, thick: 0.014, rot: -6, op: 0.75 }),
-      wetFloor(w, h, { y: 0.74, op: 0.28 })
+      ambient(w, h, { cx: 0.5, cy: 0.28, tint: '#22252c', power: 1 }),
+      tread(w, h, { id: 'tn', wear: 0 }),
+      glow(w, h, { id: 'tng', x: 0.5, y: 0.2, r: 0.34, color: PALETTE.orange, op: 0.12 })
     ),
-    glow: stack(streak(w, h, { id: 'w4q', x: 0.5, y: 0.42, len: 1.3, thick: 0.012, rot: -6, op: 0.9 }))
+    glow: { defs: '', body: '' }
   }),
 
-  'work-05': (w, h) => ({ // Mercedes-AMG GT — lucidatura
+  'work-01': (w, h) => ({ // gomme
     base: stack(
-      ambient(w, h, { cx: 0.48, cy: 0.5, tint: '#1C1F26' }),
-      wheel(w, h, { id: 'w5', cx: 0.5, cy: 0.52, r: 0.34, spokes: 11, caliper: PALETTE.orange, tilt: -8 }),
-      glow(w, h, { id: 'w5g', x: 0.5, y: 0.52, r: 0.36, color: PALETTE.orange, op: 0.14 }),
-      wetFloor(w, h, { y: 0.82, op: 0.2 })
+      ambient(w, h, { cx: 0.5, cy: 0.35, tint: '#1a1d23' }),
+      tread(w, h, { id: 'w1t', wear: 0.1 }),
+      glow(w, h, { id: 'w1g', x: 0.5, y: 0.18, r: 0.3, color: PALETTE.orange, op: 0.14 })
     ),
-    glow: stack(glow(w, h, { id: 'w5q', x: 0.5, y: 0.55, r: 0.22, color: PALETTE.orange, op: 0.45 }))
+    glow: { defs: '', body: '' }
   }),
 
-  'work-06': (w, h) => ({ // Golf R — restyling interni
+  'work-02': (w, h) => ({ // convergenza e assetto
     base: stack(
-      ambient(w, h, { cx: 0.55, cy: 0.45, tint: '#15171C' }),
-      carbon(w, h, { id: 'w6c', cell: 30, op: 0.85 }),
-      { defs: '', body: `<path d="M0 ${r2(h * 0.62)} C ${r2(w * 0.3)} ${r2(h * 0.5)}, ${r2(w * 0.7)} ${r2(h * 0.56)}, ${w} ${r2(h * 0.44)} L ${w} ${h} L 0 ${h} Z" fill="#08090B" opacity="0.92"/>` },
-      { defs: '', body: `<path d="M0 ${r2(h * 0.615)} C ${r2(w * 0.3)} ${r2(h * 0.495)}, ${r2(w * 0.7)} ${r2(h * 0.555)}, ${w} ${r2(h * 0.435)}" fill="none" stroke="${PALETTE.orange}" stroke-opacity="0.75" stroke-width="2" stroke-dasharray="14 10"/>` },
-      streak(w, h, { id: 'w6s', x: 0.45, y: 0.78, len: 1.1, thick: 0.12, rot: -6, op: 0.07 }),
-      glow(w, h, { id: 'w6g', x: 0.5, y: 0.5, r: 0.4, color: PALETTE.orange, op: 0.1 })
+      ambient(w, h, { cx: 0.5, cy: 0.5, tint: '#181b21' }),
+      wheel(w, h, { id: 'w2', cx: 0.5, cy: 0.52, r: 0.3, spokes: 10, caliper: PALETTE.orange, tilt: 6 }),
+      { defs: '', body: `<path d="M0 ${r2(h * 0.52)} L ${w} ${r2(h * 0.52)}" stroke="${PALETTE.volt}" stroke-opacity="0.55" stroke-width="1.5" stroke-dasharray="10 8"/>
+        <path d="M ${r2(w * 0.5)} 0 L ${r2(w * 0.5)} ${h}" stroke="${PALETTE.volt}" stroke-opacity="0.25" stroke-width="1" stroke-dasharray="6 8"/>
+        <path d="M ${r2(w * 0.16)} ${r2(h * 0.14)} L ${r2(w * 0.84)} ${r2(h * 0.2)}" stroke="${PALETTE.orange}" stroke-opacity="0.7" stroke-width="1.5"/>` },
+      wetFloor(w, h, { y: 0.82, op: 0.18 })
     ),
-    glow: { defs: '', body: `<path d="M0 ${r2(h * 0.615)} C ${r2(w * 0.3)} ${r2(h * 0.495)}, ${r2(w * 0.7)} ${r2(h * 0.555)}, ${w} ${r2(h * 0.435)}" fill="none" stroke="${PALETTE.orange}" stroke-width="3" stroke-dasharray="14 10"/>` }
+    glow: { defs: '', body: `<path d="M0 ${r2(h * 0.52)} L ${w} ${r2(h * 0.52)}" stroke="${PALETTE.volt}" stroke-width="2" stroke-dasharray="10 8"/>` }
   }),
 
-  'work-07': (w, h) => ({ // Alfa Romeo Giulia QV — cerchi e freni
+  'work-03': (w, h) => ({ // aria condizionata
     base: stack(
-      ambient(w, h, { cx: 0.42, cy: 0.48, tint: '#1A1C22' }),
-      wheel(w, h, { id: 'w7', cx: 0.46, cy: 0.5, r: 0.3, spokes: 5, caliper: PALETTE.orange, tilt: 14 }),
-      streak(w, h, { id: 'w7s', x: 0.5, y: 0.16, len: 1.4, thick: 0.02, rot: -3, op: 0.45 }),
-      wetFloor(w, h, { y: 0.8, op: 0.22 })
+      ambient(w, h, { cx: 0.5, cy: 0.45, tint: '#171a20' }),
+      gauge(w, h, { id: 'w3', cx: 0.5, cy: 0.5, r: 0.31, needle: -150, accent: PALETTE.volt }),
+      glow(w, h, { id: 'w3g', x: 0.5, y: 0.5, r: 0.34, color: PALETTE.volt, op: 0.12 })
     ),
-    glow: stack(streak(w, h, { id: 'w7q', x: 0.5, y: 0.16, len: 1.3, thick: 0.018, rot: -3, op: 0.7 }))
+    glow: stack(glow(w, h, { id: 'w3q', x: 0.5, y: 0.5, r: 0.2, color: PALETTE.volt, op: 0.3 }))
   }),
 
-  'work-08': (w, h) => ({ // Range Rover — wrapping totale
+  'work-04': (w, h) => ({ // impianti GPL e metano
     base: stack(
-      ambient(w, h, { cx: 0.6, cy: 0.36, tint: '#181B21' }),
-      bodyPanel(w, h, { id: 'w8', top: 0.44, swell: 0.06, peak: 0.34, angle: 94, intensity: 0.8 }),
-      streak(w, h, { id: 'w8s', x: 0.5, y: 0.5, len: 1.7, thick: 0.012, rot: -2, op: 0.6 }),
-      glow(w, h, { id: 'w8g', x: 0.24, y: 0.3, r: 0.28, color: PALETTE.cyan, op: 0.16 }),
-      wetFloor(w, h, { y: 0.76, op: 0.18 })
+      ambient(w, h, { cx: 0.45, cy: 0.45, tint: '#1a1d24' }),
+      tank(w, h, { id: 'w4', cx: 0.5, cy: 0.52, len: 0.66, rad: 0.14, rot: -12 }),
+      streak(w, h, { id: 'w4s', x: 0.5, y: 0.3, len: 1.2, thick: 0.014, rot: -6, op: 0.5 }),
+      wetFloor(w, h, { y: 0.78, op: 0.16 })
     ),
-    glow: stack(streak(w, h, { id: 'w8q', x: 0.5, y: 0.5, len: 1.6, thick: 0.01, rot: -2, op: 0.8 }))
+    glow: stack(streak(w, h, { id: 'w4q', x: 0.5, y: 0.3, len: 1.1, thick: 0.012, rot: -6, op: 0.7 }))
+  }),
+
+  'work-05': (w, h) => ({ // revisione: la luce ispettiva sulla lamiera
+    base: stack(
+      ambient(w, h, { cx: 0.5, cy: 0.2, tint: '#1c1f26', power: 1 }),
+      bodyPanel(w, h, { id: 'w5', top: 0.46, swell: 0.1, peak: 0.4, angle: 98 }),
+      streak(w, h, { id: 'w5s', x: 0.5, y: 0.5, len: 1.5, thick: 0.016, rot: -4, op: 0.9 }),
+      { defs: '', body: `<path d="M ${r2(w * 0.42)} 0 L ${r2(w * 0.2)} ${r2(h * 0.52)} L ${r2(w * 0.82)} ${r2(h * 0.52)} L ${r2(w * 0.6)} 0 Z" fill="#FFFFFF" opacity="0.045"/>` }
+    ),
+    glow: stack(streak(w, h, { id: 'w5q', x: 0.5, y: 0.5, len: 1.4, thick: 0.014, rot: -4, op: 1 }))
+  }),
+
+  'work-06': (w, h) => ({ // mappatura centraline
+    base: stack(
+      ambient(w, h, { cx: 0.4, cy: 0.4, tint: '#15181e' }),
+      curve(w, h, { id: 'w6' }),
+      glow(w, h, { id: 'w6g', x: 0.62, y: 0.4, r: 0.32, color: PALETTE.orange, op: 0.16 })
+    ),
+    glow: stack(curve(w, h, { id: 'w6q' }))
   }),
 
   og: (w, h) => ({
@@ -451,7 +544,7 @@ function darkMap() {
     const x = rand() * W, y = rand() * H, bw = 30 + rand() * 110, bh = 26 + rand() * 90;
     blocks += `<rect x="${r2(x)}" y="${r2(y)}" width="${r2(bw)}" height="${r2(bh)}" rx="3" fill="#101318" opacity="${r2(0.5 + rand() * 0.4)}"/>`;
   }
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Mappa stilizzata della zona di Modena Nord con la sede CARBONIO Studio">
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Mappa stilizzata di Maranello con la sede dell'officina in Via Firenze 56">
   <defs>
     <radialGradient id="mg" cx="52%" cy="46%" r="60%">
       <stop offset="0" stop-color="#1A1D24"/><stop offset="1" stop-color="#08090B"/></radialGradient>
@@ -464,8 +557,8 @@ function darkMap() {
   <circle cx="520" cy="352" r="150" fill="url(#pin)"/>
   <circle cx="520" cy="352" r="12" fill="#FF5A1F"/>
   <circle cx="520" cy="352" r="26" fill="none" stroke="#FF5A1F" stroke-opacity="0.6" stroke-width="2"/>
-  <text x="556" y="346" fill="#F5F5F7" font-family="Inter,Arial,sans-serif" font-size="21" font-weight="700" letter-spacing="1">CARBONIO STUDIO</text>
-  <text x="556" y="372" fill="#9A9AA3" font-family="Inter,Arial,sans-serif" font-size="17">Via dell'Industria 46 — Modena</text>
+  <text x="556" y="346" fill="#F5F5F7" font-family="Inter,Arial,sans-serif" font-size="21" font-weight="700" letter-spacing="1">AUTOFFICINA AUTOSTOP</text>
+  <text x="556" y="372" fill="#9A9AA3" font-family="Inter,Arial,sans-serif" font-size="17">Via Firenze 56 — Maranello (MO)</text>
 </svg>`;
 }
 
@@ -478,13 +571,11 @@ const JOBS = [
   ['before', 1800, 1100],
   ['after', 1800, 1100],
   ['work-01', 1200, 1500],
-  ['work-02', 1200, 900],
-  ['work-03', 1200, 1200],
+  ['work-02', 1200, 1200],
+  ['work-03', 1200, 900],
   ['work-04', 1200, 1500],
   ['work-05', 1200, 900],
-  ['work-06', 1200, 1200],
-  ['work-07', 1200, 1500],
-  ['work-08', 1200, 900]
+  ['work-06', 1200, 1200]
 ];
 
 for (const [name, w, h] of JOBS) console.log('✓', await render(name, w, h));

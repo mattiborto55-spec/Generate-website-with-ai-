@@ -45,7 +45,7 @@ export function initReveals({ reducedMotion = false } = {}) {
         }
       });
     } catch (err) {
-      console.warn('[carbonio] split non riuscito, resta il testo semplice:', err);
+      console.warn('[autostop] split non riuscito, resta il testo semplice:', err);
     }
   });
 

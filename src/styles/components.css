@@ -320,10 +320,17 @@
     linear-gradient(150deg, #2a2f3a, #0b0c0f 62%);
   box-shadow: inset 0 -10px 22px rgba(0, 0, 0, 0.7), 0 18px 40px -22px #000;
 }
-.card__gl[data-icon='detailing']::after { border-radius: 46% 54% 52% 48% / 50% 46% 54% 50%; }
-.card__gl[data-icon='ppf']::after { width: 120px; height: 62px; border-radius: 40px; }
-.card__gl[data-icon='wrapping']::after { width: 112px; height: 74px; border-radius: 56% 44% 60% 40% / 52% 60% 40% 48%; }
-.card__gl[data-icon='interni']::after { width: 68px; height: 96px; border-radius: 34px; }
+.card__gl[data-icon='gomme']::after {
+  width: 96px;
+  height: 96px;
+  background:
+    radial-gradient(circle at 50% 50%, transparent 26%, #16181d 27%, #23262c 52%, #0b0c0f 70%),
+    radial-gradient(38% 30% at 32% 22%, rgba(255, 255, 255, 0.35), transparent 60%);
+}
+.card__gl[data-icon='clima']::after { border-radius: 30% 70% 62% 38% / 40% 34% 66% 60%; }
+.card__gl[data-icon='revisione']::after { width: 78px; height: 100px; border-radius: 8px; }
+.card__gl[data-icon='mappatura']::after { width: 118px; height: 74px; border-radius: 56% 44% 60% 40% / 52% 60% 40% 48%; }
+.card__gl[data-icon='gas']::after { width: 62px; height: 104px; border-radius: 30px; }
 
 /* Quando le mini-scene 3D sono attive, il fallback CSS si toglie di mezzo. */
 .has-cardgl .card__gl::after { opacity: 0; transition: opacity var(--d) var(--ease); }

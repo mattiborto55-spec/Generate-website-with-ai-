@@ -53,7 +53,7 @@ if (isWebGLAvailable()) {
   try {
     stage = new Stage($('#gl'), { reducedMotion });
   } catch (err) {
-    console.warn('[carbonio] WebGL non inizializzato:', err);
+    console.warn('[autostop] WebGL non inizializzato:', err);
     document.documentElement.classList.add('no-webgl');
   }
 } else {
@@ -102,8 +102,8 @@ if (stage) {
   }
 }
 
-// Utile per rifinire le inquadrature dal browser: carbonio.stage.setShot('ppf')
-window.carbonio = { get stage() { return stage; }, gsap, ScrollTrigger };
+// Utile per rifinire le inquadrature dal browser: autostop.stage.setShot('gomme')
+window.autostop = { get stage() { return stage; }, gsap, ScrollTrigger };
 
 /* --------------------------------------------------- 3. loop unificato */
 

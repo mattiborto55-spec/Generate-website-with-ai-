@@ -1,14 +1,12 @@
-# CARBONIO — Detailing & Wrapping Studio
+# Autofficina Autostop — sito one-page
 
-Sito one-page immersivo per uno studio di car detailing: scena 3D real-time in
-WebGL, camera agganciata allo scroll, motion design cinematografico. Tutto
-statico, nessun backend richiesto.
+Sito immersivo per l'officina **Autofficina Autostop** di Maranello (MO):
+scena 3D real-time in WebGL, camera agganciata allo scroll, motion design
+cinematografico. Tutto statico, nessun backend richiesto.
 
-**Attenzione:** nome, indirizzo, telefono, P.IVA, prezzi e recensioni sono
-**dati di esempio inventati**. Vanno sostituiti con quelli reali prima di
-pubblicare — in particolare `aggregateRating` e `review` nel JSON-LD, che con
-recensioni non autentiche violano le linee guida di Google. Vedi
-[Cosa sostituire](#cosa-sostituire).
+I dati dell'attività in pagina sono quelli reali: ragione sociale, indirizzo,
+telefono, P.IVA, REA, PEC, orari, servizi e recensioni Google. Resta qualcosa
+da completare prima di pubblicare — vedi [Prima di pubblicare](#prima-di-pubblicare).
 
 ---
 
@@ -19,16 +17,16 @@ npm install
 npm run dev       # server di sviluppo su http://localhost:5173
 npm run build     # build di produzione in dist/
 npm run preview   # anteprima della build
-npm run images    # rigenera gli asset visivi in public/img
+npm run images    # rigenera le illustrazioni in public/img
 npm run model:get # scarica un modello 3D di vettura per la hero
 
-npm run build:single   # dist-single/carbonio.html: tutto in un file solo
+npm run build:single   # dist-single/autostop.html: tutto in un file solo
 ```
 
 `build:single` produce un unico `.html` con dentro CSS, JavaScript, font,
 immagini e — se c'è — il modello 3D, tutto in base64 (~3 MB senza modello,
-~5,5 MB con): si apre con un doppio clic, si manda per email e si
-carica ovunque, senza server né cartelle. Per il sito in produzione si usa
+~5,5 MB con): si apre con un doppio clic, si manda per email e si carica
+ovunque, senza server né cartelle. Per il sito in produzione si usa
 `npm run build`, che tiene gli asset separati e quindi in cache.
 
 La cartella `dist/` è pubblicabile così com'è su qualsiasi hosting statico
@@ -40,9 +38,11 @@ La cartella `dist/` è pubblicabile così com'è su qualsiasi hosting statico
 
 ```
 index.html                markup completo, JSON-LD, Open Graph
-scripts/gen-images.mjs    generatore degli asset visivi (SVG -> WebP con sharp)
+scripts/gen-images.mjs    generatore delle illustrazioni (SVG -> WebP con sharp)
+scripts/get-model.mjs     scarica un modello 3D di vettura
+scripts/build-singlefile.mjs   build in un solo file
 public/
-  img/                    immagini generate + mappa vettoriale + grana
+  img/                    illustrazioni generate + mappa vettoriale + grana
   fonts/                  Anton e Inter self-hostati (latin, latin-ext)
 src/
   main.js                 orchestratore: scroll, scena, moduli, preloader
@@ -50,7 +50,7 @@ src/
     tokens.css            palette, tipografia, spazi, easing
     base.css              reset, fondo, grana, cursore, preloader
     components.css        nav, bottoni, card, marquee, form, dock
-    sections.css          le tredici sezioni
+    sections.css          le sezioni
   gl/
     index.js              Stage: renderer, camera, inquadrature, loop
     env.js                ambiente studio generato a runtime (PMREM)
@@ -83,8 +83,8 @@ porta già uno e il bundler lo include.
 **La speed form**, quando il modello non c'è o tarda ad arrivare: la scultura
 di stile che gli studi di design fanno prima del modello definitivo. È una
 superficie parametrica costruita in `gl/car.js` — sezione a superellisse
-modulata dal profilo laterale di una sportiva — con proporzioni prese da una
-911 reale. Non ha vincoli di licenza e non lascia mai la hero vuota.
+modulata dal profilo laterale di una sportiva. Non ha vincoli di licenza e non
+lascia mai la hero vuota.
 
 Il resto della resa viene da:
 
@@ -103,16 +103,19 @@ Il resto della resa viene da:
   insegue l'obiettivo con smorzamento esponenziale, quindi il movimento resta
   morbido a qualsiasi framerate.
 
-Per rifinire un'inquadratura dal browser: `carbonio.stage.setShot('ppf')`.
+Per rifinire un'inquadratura dal browser: `autostop.stage.setShot('gomme')`.
 
 ### Immagini
 
 Niente foto stock: `scripts/gen-images.mjs` disegna ogni immagine in SVG
-(pannelli di carrozzeria, riflessi, cerchi, fari, schiuma, carbonio) e la
-rasterizza in WebP con sharp, in tre livelli — forme nitide, sorgenti luminose
-sfocate in `screen`, grana in `overlay`. È deterministico: due build producono
-gli stessi file. Sostituendo le foto vere basta tenere gli stessi nomi in
-`public/img/`.
+(battistrada, cerchi, manometro, bombola, curve di potenza) e la rasterizza in
+WebP con sharp, in tre livelli — forme nitide, sorgenti luminose sfocate in
+`screen`, grana in `overlay`. È deterministico: due build producono gli stessi
+file.
+
+Sono **illustrazioni dei servizi, non foto di lavori**: la pagina lo dice
+esplicitamente. Appena avete foto vere dell'officina, sostituitele tenendo gli
+stessi nomi in `public/img/` — il layout non cambia.
 
 ---
 
@@ -124,24 +127,28 @@ gli stessi file. Sostituendo le foto vere basta tenere gli stessi nomi in
 - Mobile: meno poligoni, meno luci, meno particelle, niente bloom né
   post-processing, DPR limitato, nessun pin orizzontale, tap target da 48px.
 - Contrasto AA, focus visibile, HTML semantico, `<details>` nativo per le FAQ,
-  slider prima/dopo pilotabile da tastiera, alt text su tutte le immagini.
+  slider del battistrada pilotabile da tastiera, alt text su tutte le immagini.
 - Font self-hostati e precaricati, immagini in WebP con `loading="lazy"`,
   `three` e `gsap` in chunk separati per la cache.
 
 ---
 
-## Cosa sostituire
+## Prima di pubblicare
 
-| Dove | Cosa |
-| --- | --- |
-| `index.html` (JSON-LD, footer, contatti, dock) | nome, indirizzo, telefono, WhatsApp, email, P.IVA, orari, social |
-| `index.html` (JSON-LD `aggregateRating` e `review`) | **obbligatorio**: solo recensioni reali, o rimuovere i blocchi |
-| `index.html` (`<title>`, meta description, canonical, `og:url`) | dominio e città reali |
-| Sezione Servizi e FAQ | prezzi e tempi effettivi |
-| `public/img/` | foto reali dei lavori (stessi nomi file) |
-| `src/js/form.js` | l'invio è simulato: collega il tuo endpoint o un servizio tipo Formspree |
-| `public/img/map.svg` | mappa stilizzata: sostituibile con un embed reale se serve |
-| `public/models/car.glb` | il modello di prova è di marca: usane uno tuo o generico, con licenza verificata |
+| Cosa | Dove | Perché |
+| --- | --- | --- |
+| **Dominio** | `index.html`, blocco commentato nel `<head>` | canonical, `og:url` e `og:image` vanno in assoluto, o i social non leggono l'anteprima |
+| **Email** | contatti, footer, JSON-LD | in pagina non c'è: la PEC non è un indirizzo per i clienti |
+| **Invio del form** | `src/js/form.js` | oggi è simulato: collega un endpoint o un servizio tipo Formspree |
+| **Privacy e cookie** | link in fondo | i due link puntano a pagine che non esistono ancora |
+| **Testi del processo** | sezione "Come lavoriamo" | descrivono un modo di lavorare: rileggeteli e correggeteli dove non corrisponde |
+| **Foto vere** | `public/img/` | le illustrazioni reggono, ma le foto dell'officina convertono di più |
+| **Modello 3D** | `public/models/car.glb` | quello di prova è una vettura di marca: verificane licenza e opportunità |
+
+Valutazione media e recensioni **non** sono nei dati strutturati, ed è voluto:
+i rich result di Google non ammettono recensioni raccolte da terze parti, e le
+quattro in pagina arrivano da Google. Sono riportate con nome e data, come
+sono state scritte.
 
 ---
 

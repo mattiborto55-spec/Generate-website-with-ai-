@@ -25,9 +25,12 @@ const CAR_MODEL_URL = '/models/car.glb';
  * qui il modello e il decodificatore Draco come data URI. In tutti gli altri
  * casi restano i percorsi normali.
  */
-const ASSETS = typeof window !== 'undefined' ? window.__CARBONIO_ASSETS__ : null;
+const ASSETS = typeof window !== 'undefined' ? window.__AUTOSTOP_ASSETS__ : null;
 const MODEL_URL = ASSETS?.car || CAR_MODEL_URL;
-const DRACO_PATH = ASSETS?.draco || '/draco/';
+// Senza iniezione resta undefined: three usa il decodificatore che il bundler
+// ha già incluso. Un percorso fisso qui manderebbe la richiesta su una
+// cartella che in produzione non esiste.
+const DRACO_PATH = ASSETS?.draco;
 
 /**
  * Inquadrature agganciate allo scroll. Ogni sezione ha la sua: la camera
@@ -39,11 +42,11 @@ export const SHOTS = {
   // `off` sposta la camera nel suo piano: serve a spingere l'auto fuori
   // centro e lasciare respiro al testo (hero: testo a sinistra, auto a destra).
   hero:      { pos: [6.3, 2.1, 7.0],   target: [0, 0.5, 0],       fov: 34, dim: 1.0,  spin: 0.055, off: [-0.95, -0.5] },
-  coating:   { pos: [-7.4, 2.6, 6.2],  target: [0, 0.6, 0],       fov: 32, dim: 0.34,  spin: 0.03,  off: [0.8, -0.2] },
-  detailing: { pos: [3.1, 1.1, 3.3],   target: [0.5, 0.45, 0.1],  fov: 30, dim: 0.4, spin: 0.018, off: [-0.5, 0] },
-  ppf:       { pos: [-3.4, 0.9, 2.7],  target: [-1.5, 0.4, 0.1],  fov: 27, dim: 0.34, spin: 0.012, off: [0.45, 0] },
-  wrapping:  { pos: [3.9, 0.95, 2.8],  target: [1.3, 0.35, 0.3],  fov: 29, dim: 0.32, spin: 0.02,  off: [-0.45, 0] },
-  interni:   { pos: [0.4, 3.6, 4.2],   target: [0, 0.6, 0],       fov: 34, dim: 0.3,  spin: 0.03,  off: [0.3, 0] },
+  servizi:   { pos: [-7.4, 2.6, 6.2],  target: [0, 0.6, 0],       fov: 32, dim: 0.34,  spin: 0.03,  off: [0.8, -0.2] },
+  gomme:     { pos: [3.1, 1.1, 3.3],   target: [0.5, 0.45, 0.1],  fov: 30, dim: 0.4, spin: 0.018, off: [-0.5, 0] },
+  processo:  { pos: [-3.4, 0.9, 2.7],  target: [-1.5, 0.4, 0.1],  fov: 27, dim: 0.34, spin: 0.012, off: [0.45, 0] },
+  officina:  { pos: [3.9, 0.95, 2.8],  target: [1.3, 0.35, 0.3],  fov: 29, dim: 0.32, spin: 0.02,  off: [-0.45, 0] },
+  recensioni:{ pos: [0.4, 3.6, 4.2],   target: [0, 0.6, 0],       fov: 34, dim: 0.3,  spin: 0.03,  off: [0.3, 0] },
   outro:     { pos: [6.4, 1.9, 13.5],  target: [0, 0.45, 0],      fov: 40, dim: 0.95, spin: 0.05,  off: [0, -0.25] }
 };
 
@@ -252,7 +255,7 @@ export class Stage {
       const { loadCarModel } = await import('./model.js');
       return await loadCarModel({ url: MODEL_URL, paint: this.paint, dracoPath: DRACO_PATH });
     } catch (err) {
-      console.warn('[carbonio] modello 3D non caricato, resta la speed form:', err.message);
+      console.warn('[autostop] modello 3D non caricato, resta la speed form:', err.message);
       return null;
     }
   }

@@ -3,7 +3,7 @@
  * immagini in base64. Serve per mandare il sito a qualcuno, aprirlo con un
  * doppio clic o caricarlo dove non si può pubblicare una cartella.
  *
- *   npm run build:single   ->   dist-single/carbonio.html
+ *   npm run build:single   ->   dist-single/autostop.html
  *
  * Pesa più della build normale (niente cache, niente lazy loading): per il
  * sito vero in produzione si usa `npm run build`.
@@ -121,7 +121,7 @@ try {
       wasm: await fileUri(join(DRACO_SRC, 'draco_decoder.wasm'))
     }
   };
-  assetsTag = `<script>window.__CARBONIO_ASSETS__ = ${JSON.stringify(assets)};</script>\n`;
+  assetsTag = `<script>window.__AUTOSTOP_ASSETS__ = ${JSON.stringify(assets)};</script>\n`;
 } catch {
   console.log('· nessun modello 3D: il file unico userà la forma parametrica');
 }
@@ -133,7 +133,7 @@ html = html
   .replace('</body>', () => `${assetsTag}<script type="module">${safeJs}</script>\n</body>`);
 
 await mkdir(OUT_DIR, { recursive: true });
-const outFile = join(OUT_DIR, 'carbonio.html');
+const outFile = join(OUT_DIR, 'autostop.html');
 await writeFile(outFile, html);
 
 const { size } = await stat(outFile);
