@@ -21,16 +21,35 @@ import { buildFloor, buildParticles } from './stage-props.js';
 const CAR_MODEL_URL = '/models/car.glb';
 
 /**
- * La build a file unico non ha una cartella public da cui pescare: inietta
- * qui il modello e il decodificatore Draco come data URI. In tutti gli altri
- * casi restano i percorsi normali.
+ * La build a file unico non ha una cartella public da cui pescare: inietta il
+ * modello qui, in base64. Non è un data URI da scaricare ma byte da passare
+ * direttamente al parser: niente richieste di rete, quindi niente da far
+ * passare da eventuali policy di sicurezza della pagina che lo ospita.
  */
 const ASSETS = typeof window !== 'undefined' ? window.__AUTOSTOP_ASSETS__ : null;
-const MODEL_URL = ASSETS?.car || CAR_MODEL_URL;
-// Senza iniezione resta undefined: three usa il decodificatore che il bundler
-// ha già incluso. Un percorso fisso qui manderebbe la richiesta su una
-// cartella che in produzione non esiste.
-const DRACO_PATH = ASSETS?.draco;
+const MODEL_URL = CAR_MODEL_URL;
+
+/** base64 → Uint8Array, senza fetch. */
+function decodeBase64(b64) {
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  return bytes;
+}
+
+/**
+ * I byte del modello iniettati nella pagina: in chiaro se ci sono, altrimenti
+ * il pacchetto gzip srotolato da `DecompressionStream`, che è nel browser e
+ * non ha bisogno né di WebAssembly né di worker.
+ */
+async function injectedModel() {
+  if (ASSETS?.carBytes) return decodeBase64(ASSETS.carBytes).buffer;
+  if (!ASSETS?.carGz) return undefined;
+  if (typeof DecompressionStream !== 'function') return undefined;
+  const gz = decodeBase64(ASSETS.carGz);
+  const stream = new Blob([gz]).stream().pipeThrough(new DecompressionStream('gzip'));
+  return await new Response(stream).arrayBuffer();
+}
 
 /**
  * Inquadrature agganciate allo scroll. Ogni sezione ha la sua: la camera
@@ -151,6 +170,7 @@ export class Stage {
     // vede il frontale invece della coda.
     this.spinAngle = Math.PI;
     this.intro = 0; // 0 -> 1 durante l'apertura del sipario
+    this.swapFade = 1; // scende e risale se la vettura vera sostituisce la forma
     this.frameScale = 1;
 
     this.resize();
@@ -219,7 +239,10 @@ export class Stage {
       this.car.add(car.group);
     };
 
-    const timer = setTimeout(useProcedural, 1400);
+    // Tre secondi: il modello vero, compresso con meshopt, di norma è in
+    // scena molto prima. La forma parametrica entra solo se la rete è lenta
+    // davvero, e in quel caso è meglio di una hero vuota.
+    const timer = setTimeout(useProcedural, 3000);
 
     this._loadRealCar()
       .then((model) => {
@@ -227,6 +250,9 @@ export class Stage {
         if (!model) return useProcedural();
 
         settled = true;
+        // Se la forma parametrica era già entrata, il cambio non è un taglio
+        // netto: l'esposizione cala e risale, come una luce che si riprende.
+        const swapping = !!this.proceduralCar;
         if (this.proceduralCar) {
           this.car.remove(this.proceduralCar.group);
           this.proceduralCar.group.traverse((o) => {
@@ -235,7 +261,13 @@ export class Stage {
           this.proceduralCar.materials.forEach((m) => m.dispose());
           this.proceduralCar = null;
         }
+        // La vettura vera ha lamiere molto più piccole della forma
+        // parametrica: gli stessi fiocchi metallici, alla stessa scala,
+        // diventano granella. Più fitti e più leggeri leggono come vernice.
+        this.paintUniforms.uFlakeDensity.value = 460;
+        this.paintUniforms.uFlake.value *= 0.55;
         this.car.add(model.group);
+        if (swapping) this.swapFade = 0; // risale in update(), niente stacco
       })
       .catch(() => {
         clearTimeout(timer);
@@ -246,14 +278,14 @@ export class Stage {
   /** Carica il modello glTF, se c'è. Restituisce null quando manca. */
   async _loadRealCar() {
     try {
-      // Un data URI risponde solo a GET: la verifica di esistenza serve
-      // unicamente quando il modello è un file servito dal sito.
-      if (!MODEL_URL.startsWith('data:')) {
+      // Con i byte già in pagina non c'è niente da verificare. Altrimenti sì:
+      // il modello può non esserci, e la scena deve accorgersene subito.
+      if (!ASSETS?.carBytes && !ASSETS?.carGz) {
         const res = await fetch(MODEL_URL, { method: 'HEAD' });
         if (!res.ok) return null;
       }
-      const { loadCarModel } = await import('./model.js');
-      return await loadCarModel({ url: MODEL_URL, paint: this.paint, dracoPath: DRACO_PATH });
+      const [{ loadCarModel }, buffer] = await Promise.all([import('./model.js'), injectedModel()]);
+      return await loadCarModel({ url: MODEL_URL, buffer, paint: this.paint });
     } catch (err) {
       console.warn('[autostop] modello 3D non caricato, resta la speed form:', err.message);
       return null;
@@ -374,6 +406,9 @@ export class Stage {
       l.lookAt(0, 0.6, 0);
     }
 
+    // rientro dell'esposizione dopo un cambio di vettura in corsa
+    if (this.swapFade < 1) this.swapFade = Math.min(1, this.swapFade + dt / 0.9);
+
     if (!this.reducedMotion) updateSweep(this.paintUniforms, elapsed, { span: 5.4, period: 6, duration: 1.15 });
     if (!this.reducedMotion) this.dust.uniforms.uTime.value = elapsed;
 
@@ -383,7 +418,8 @@ export class Stage {
     const dist = -this.camera.position.z / (dir.z || -0.0001);
     this.dust.uniforms.uMouse.value.copy(this.camera.position).addScaledVector(dir, dist);
 
-    this.renderer.toneMappingExposure = 1.15 * this.now.dim * (0.25 + 0.75 * this.intro);
+    this.renderer.toneMappingExposure =
+      1.15 * this.now.dim * (0.25 + 0.75 * this.intro) * (0.35 + 0.65 * this.swapFade);
     if (this.bloom) this.bloom.strength = 0.42 * this.now.dim;
     this.floor.pool.material.opacity = 0.32 * this.now.dim;
 

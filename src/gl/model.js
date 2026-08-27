@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 
 /**
  * Caricamento di un'auto vera in formato glTF/GLB.
@@ -27,29 +26,34 @@ function classify(mesh) {
   const name = `${mesh.name} ${mesh.material?.name || ''}`.toLowerCase();
   if (/body_?colou?r|carrozzeria|paint|bodywork|^body$|\bbody\b/.test(name)) return 'paint';
   if (/glass|vetro|window|windshield|windscreen/.test(name)) return 'glass';
-  if (/chrome|cromatur|rim|cerchi|wheel_?rim/.test(name)) return 'chrome';
-  if (/tire|tyre|pneumatic|gomm/.test(name)) return 'tyre';
+  // La gomma prima del cerchio: in molti modelli il pneumatico si chiama
+  // "wheel_tire", e chi cerca "wheel" per primo se lo porta via.
+  if (/tire|tyre|pneumatic|gomm|rubber/.test(name)) return 'tyre';
+  if (/chrome|cromatur|rim|cerchi|wheel|mozzo/.test(name)) return 'chrome';
   return null;
 }
 
 /**
  * Carica il modello e lo prepara per la scena.
- * @param {string|{js: string, wasm: string}} [o.dracoPath] percorso del
- *        decodificatore Draco. Da omettere: three ne porta già uno. Serve
- *        alla build a file unico, che passa i due file come data URI.
+ *
+ * La geometria arriva già in chiaro e solo quantizzata (vedi
+ * `scripts/optimize-model.mjs`): si apre con il solo parser glTF, senza
+ * worker e senza WebAssembly. Con Draco servivano un worker, un
+ * decodificatore da scaricare e un viaggio di andata e ritorno per ognuna
+ * delle cinquanta primitive — venti secondi buoni — e in una pagina con
+ * Content-Security-Policy stretta non partiva affatto.
+ *
+ * @param {string} [o.url] indirizzo del file .glb
+ * @param {ArrayBuffer} [o.buffer] byte del modello, già in memoria: la build
+ *        a file unico li passa così, senza nessuna richiesta di rete.
  * @returns {Promise<{group: THREE.Group, painted: number}>}
  */
-export async function loadCarModel({ url, paint, dracoPath }) {
+export async function loadCarModel({ url, buffer, paint }) {
   const loader = new GLTFLoader();
-  const draco = new DRACOLoader();
-  // Senza indicazioni three usa il decodificatore che il bundler ha già
-  // incluso: non serve copiare niente in public/. Il percorso esplicito
-  // serve solo alla build a file unico, che lo passa come data URI.
-  if (dracoPath) draco.setDecoderPath(dracoPath);
-  loader.setDRACOLoader(draco);
 
-  const gltf = await loader.loadAsync(url);
-  draco.dispose();
+  const gltf = buffer
+    ? await loader.parseAsync(buffer, '')
+    : await loader.loadAsync(url);
 
   const model = gltf.scene;
 
@@ -91,11 +95,14 @@ export async function loadCarModel({ url, paint, dracoPath }) {
     thickness: 0.2,
     envMapIntensity: 2.2
   });
+  // Cerchi: metallo spazzolato, non cromatura da concessionaria. Con
+  // riflettanza troppo alta prendevano il caldo delle luci di scena e
+  // diventavano rosati sotto il bloom.
   const chromeMaterial = new THREE.MeshStandardMaterial({
-    color: 0xc9ced8,
+    color: 0x7c828b,
     metalness: 1,
-    roughness: 0.22,
-    envMapIntensity: 1.8
+    roughness: 0.42,
+    envMapIntensity: 0.95
   });
   const tyreMaterial = new THREE.MeshStandardMaterial({
     color: 0x0b0b0e,
@@ -131,7 +138,11 @@ export async function loadCarModel({ url, paint, dracoPath }) {
         // interni e dettagli non restano piatti nel buio dello showroom.
         if (o.material && 'envMapIntensity' in o.material) {
           o.material = o.material.clone();
-          o.material.envMapIntensity = 1.4;
+          o.material.envMapIntensity = 1.05;
+          // I modelli da configuratore hanno interni pensati per la luce del
+          // giorno: qui siamo in uno showroom buio, e sedili color panna
+          // sparano più della carrozzeria. Li portiamo giù di un terzo.
+          o.material.color?.multiplyScalar(0.62);
         }
     }
   });

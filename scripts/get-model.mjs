@@ -13,6 +13,11 @@
  * subito com'è il sito con un'auto vera, ma prima di pubblicare verifica la
  * licenza del modello e considera che rappresenta una vettura di marca.
  * Per sostituirlo basta mettere un altro .glb in public/models/car.glb.
+ *
+ * Appena scaricato, il file passa da `scripts/optimize-model.mjs`: com'è
+ * distribuito è compresso con Draco, che ha bisogno di un worker e di
+ * WebAssembly e ci mette secondi buoni a rimettere insieme le sue cinquanta
+ * primitive. Dopo l'ottimizzazione si apre con il solo parser glTF.
  */
 
 import { mkdir, writeFile, stat } from 'node:fs/promises';
@@ -33,8 +38,11 @@ const buf = Buffer.from(await res.arrayBuffer());
 await writeFile(join(MODELS, 'car.glb'), buf);
 
 const { size } = await stat(join(MODELS, 'car.glb'));
-console.log(`\n✓ public/models/car.glb — ${(size / 1024 / 1024).toFixed(2)} MB`);
-console.log('  (il decodificatore Draco lo porta three: niente altro da copiare)\n');
+console.log(`✓ scaricato — ${(size / 1024 / 1024).toFixed(2)} MB\n`);
+
+console.log('· preparo il modello per il web…');
+await import('./optimize-model.mjs');
+console.log('');
 console.log('Crediti: Ferrari 458 Italia, modello di vicent091036 (Sketchfab),');
 console.log('distribuito con gli esempi di three.js. Verifica licenza e marchio');
 console.log('prima di usarlo su un sito pubblicato.\n');

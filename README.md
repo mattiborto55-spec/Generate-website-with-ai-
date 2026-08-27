@@ -19,16 +19,17 @@ npm run dev       # server di sviluppo su http://localhost:5173
 npm run build     # build di produzione in dist/
 npm run preview   # anteprima della build
 npm run images    # rigenera le illustrazioni in public/img
-npm run model:get # scarica un modello 3D di vettura per la hero
+npm run model:get # scarica un modello 3D di vettura per la hero (e lo prepara)
+npm run model:opt # ri-prepara per il web un .glb messo a mano
 
 npm run build:single   # dist-single/autostop.html: tutto in un file solo
 ```
 
 `build:single` produce un unico `.html` con dentro CSS, JavaScript, font,
-immagini e — se c'è — il modello 3D, tutto in base64 (~3 MB senza modello,
-~5,5 MB con): si apre con un doppio clic, si manda per email e si carica
-ovunque, senza server né cartelle. Per il sito in produzione si usa
-`npm run build`, che tiene gli asset separati e quindi in cache.
+immagini e — se c'è — il modello 3D (~3 MB senza modello, ~8,5 MB con): si apre
+con un doppio clic e si carica ovunque, senza server né cartelle. Per il sito
+in produzione si usa `npm run build`, che tiene gli asset separati e quindi in
+cache.
 
 La cartella `dist/` è pubblicabile così com'è su qualsiasi hosting statico
 (Netlify, Vercel, Cloudflare Pages, un semplice Apache).
@@ -78,14 +79,30 @@ Il modello **non è nel repository**: licenza e marchio della vettura sono una
 scelta di chi pubblica, non una dipendenza da trascinarsi dietro.
 `npm run model:get` ne scarica uno (la Ferrari 458 degli esempi di three.js,
 modello di vicent091036) per vedere subito il risultato. Per usarne un altro
-basta sostituire il file. Il decodificatore Draco non serve copiarlo: three ne
-porta già uno e il bundler lo include.
+basta sostituire `public/models/car.glb` e lanciare `npm run model:opt`.
 
-**La speed form**, quando il modello non c'è o tarda ad arrivare: la scultura
-di stile che gli studi di design fanno prima del modello definitivo. È una
+**Perché il modello va "preparato"** (`scripts/optimize-model.mjs`). Il file
+come si scarica è compresso con Draco: cinquanta primitive, ognuna decodificata
+in un worker e rispedita al thread principale mentre la pagina sta montando la
+scena. Misurato: venti secondi prima che la vettura entrasse, e nel frattempo
+in hero c'era la forma parametrica. Peggio ancora, Draco e meshopt hanno
+bisogno di WebAssembly: dentro una pagina con Content-Security-Policy stretta
+non partono affatto, e la vettura vera non arriva mai.
+
+Lo script quindi decomprime, unisce le primitive per materiale, salda i
+vertici e quantizza (`KHR_mesh_quantization`, che three legge da sé), poi
+riscrive il file senza compressione di geometria: 7,15 MB su disco, 4,3 MB
+sulla rete con il gzip che ogni hosting statico fa da solo. Si apre con il
+solo parser glTF, in millisecondi, senza worker e senza WebAssembly. La build
+a file unico lo comprime da sé e lo srotola con `DecompressionStream`, che è
+già nel browser.
+
+**La speed form**, quando il modello non c'è o tarda più di tre secondi:
+la scultura di stile che gli studi di design fanno prima del modello definitivo. È una
 superficie parametrica costruita in `gl/car.js` — sezione a superellisse
 modulata dal profilo laterale di una sportiva. Non ha vincoli di licenza e non
-lascia mai la hero vuota.
+lascia mai la hero vuota. Se il modello vero arriva dopo, il cambio non è uno
+stacco: l'esposizione della scena cala e risale, come una luce che si riprende.
 
 Il resto della resa viene da:
 

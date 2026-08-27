@@ -11,13 +11,13 @@
 
 import { build } from 'vite';
 import { readFile, writeFile, mkdir, stat, access, readdir } from 'node:fs/promises';
+import { gzipSync } from 'node:zlib';
 import { dirname, join, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 const OUT_DIR = join(ROOT, 'dist-single');
 const TMP_DIR = join(ROOT, '.tmp-single');
-const DRACO_SRC = join(ROOT, 'node_modules/three/examples/jsm/libs/draco/gltf');
 
 const MIME = {
   '.glb': 'model/gltf-binary',
@@ -105,22 +105,22 @@ const safeJs = js.replace(/<\/script/gi, '<\\/script');
 const favicon = await dataUri('/favicon.svg');
 
 /**
- * Il modello 3D e il decodificatore Draco vivono in public/, che qui non
- * esiste: li portiamo dentro come data URI e la scena li trova da sé.
- * Se il modello non c'è (repo appena clonato), il file unico userà la forma
- * parametrica, esattamente come il sito.
+ * Il modello 3D vive in public/, che qui non esiste: entra in pagina come
+ * base64 di un pacchetto gzip, non come data URI. Due differenze che contano:
+ * il file resta ragionevole, e i byte vengono srotolati da DecompressionStream
+ * e passati al parser glTF senza nessuna fetch, senza worker e senza
+ * WebAssembly — quindi la vettura vera si vede anche dentro una pagina con
+ * Content-Security-Policy stretta. Se il modello non c'è (repo appena
+ * clonato), resta la forma parametrica, esattamente come sul sito.
  */
 let assetsTag = '';
 try {
-  await access(join(ROOT, 'public/models/car.glb'));
-  console.log('· includo il modello 3D e il decodificatore Draco…');
-  const assets = {
-    car: await dataUri('/models/car.glb'),
-    draco: {
-      js: await fileUri(join(DRACO_SRC, 'draco_wasm_wrapper.js')),
-      wasm: await fileUri(join(DRACO_SRC, 'draco_decoder.wasm'))
-    }
-  };
+  const glb = await readFile(join(ROOT, 'public/models/car.glb'));
+  const gz = gzipSync(glb, { level: 9 });
+  console.log(
+    `· includo il modello 3D (${(glb.byteLength / 1024 / 1024).toFixed(2)} MB → ${(gz.byteLength / 1024 / 1024).toFixed(2)} MB compresso)…`
+  );
+  const assets = { carGz: gz.toString('base64') };
   assetsTag = `<script>window.__AUTOSTOP_ASSETS__ = ${JSON.stringify(assets)};</script>\n`;
 } catch {
   console.log('· nessun modello 3D: il file unico userà la forma parametrica');
