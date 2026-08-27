@@ -20,7 +20,14 @@ npm run dev       # server di sviluppo su http://localhost:5173
 npm run build     # build di produzione in dist/
 npm run preview   # anteprima della build
 npm run images    # rigenera gli asset visivi in public/img
+
+npm run build:single   # dist-single/carbonio.html: tutto in un file solo
 ```
+
+`build:single` produce un unico `.html` da ~3 MB con dentro CSS, JavaScript,
+font e immagini in base64: si apre con un doppio clic, si manda per email e si
+carica ovunque, senza server né cartelle. Per il sito in produzione si usa
+`npm run build`, che tiene gli asset separati e quindi in cache.
 
 La cartella `dist/` è pubblicabile così com'è su qualsiasi hosting statico
 (Netlify, Vercel, Cloudflare Pages, un semplice Apache).
