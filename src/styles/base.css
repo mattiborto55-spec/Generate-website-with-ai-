@@ -1,0 +1,355 @@
+/* =====================================================================
+   BASE — reset, fondo, tipografia, grana, cursore, preloader.
+   ===================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: auto; /* lo smooth scroll lo gestisce Lenis */
+}
+
+body {
+  margin: 0;
+  background: var(--carbon);
+  color: var(--muted);
+  font-family: var(--sans);
+  font-size: var(--fs-body);
+  line-height: 1.65;
+  font-synthesis-weight: none;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: clip;
+}
+
+/* Il gradiente radiale appena percettibile che tiene insieme tutto. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(120% 80% at 50% 0%, var(--carbon-up) 0%, rgba(20, 20, 24, 0.35) 38%, transparent 72%),
+    radial-gradient(80% 60% at 85% 85%, rgba(255, 90, 31, 0.05) 0%, transparent 60%),
+    var(--carbon);
+  pointer-events: none;
+}
+
+img, svg, video { display: block; max-width: 100%; }
+img { height: auto; }
+
+h1, h2, h3, h4 {
+  margin: 0;
+  color: var(--ink);
+  font-family: var(--display);
+  font-weight: 400;
+  line-height: 0.92;
+  letter-spacing: var(--tracking-display);
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+p { margin: 0; text-wrap: pretty; }
+ul, ol { margin: 0; padding: 0; list-style: none; }
+
+a { color: inherit; text-decoration: none; }
+button, input, select, textarea { font: inherit; color: inherit; }
+
+::selection { background: var(--flame); color: #fff; }
+
+/* --- scrollbar ------------------------------------------------------- */
+* { scrollbar-width: thin; scrollbar-color: #2a2a30 transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #0d0d10; }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #2e2e36, #1b1b20);
+  border: 2px solid #0d0d10;
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--flame); }
+
+/* --- accessibilità --------------------------------------------------- */
+:focus-visible {
+  outline: 2px solid var(--volt);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.skip-link {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 999;
+  padding: 0.7rem 1.1rem;
+  background: var(--flame);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 10px;
+  transform: translateY(-160%);
+  transition: transform var(--d-fast) var(--ease);
+}
+.skip-link:focus-visible { transform: none; }
+
+/* --- layout di base -------------------------------------------------- */
+.section {
+  position: relative;
+  padding: var(--section-y) var(--gutter);
+  max-width: var(--maxw);
+  margin-inline: auto;
+}
+
+/* Velo dietro il testo: la scena 3D resta atmosfera e non ruba leggibilità.
+   Sfuma sui bordi, così non si vede mai dove comincia e dove finisce. */
+.section::before,
+.process__pin::before {
+  content: '';
+  position: absolute;
+  inset: -8vh 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(10, 10, 11, 0.86) 7%,
+    rgba(10, 10, 11, 0.9) 50%,
+    rgba(10, 10, 11, 0.86) 93%,
+    transparent 100%
+  );
+}
+
+.section__head { margin-bottom: clamp(3rem, 6vw, 5.5rem); max-width: 58ch; }
+
+.section__head--split {
+  display: grid;
+  gap: clamp(1.5rem, 3vw, 4rem);
+  max-width: none;
+  align-items: end;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 900px) {
+  .section__head--split { grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); }
+  .section__head--split .section__lead { padding-bottom: 0.6rem; }
+}
+
+.section__title { font-size: var(--fs-h2); }
+
+.section__lead {
+  margin-top: 1.35rem;
+  font-size: var(--fs-lead);
+  color: var(--muted);
+  max-width: 48ch;
+}
+
+.kicker {
+  margin: 0 0 1.1rem;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--flame);
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin: 0 0 clamp(1.2rem, 2vw, 2rem);
+  font-size: var(--fs-small);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.eyebrow i { width: 34px; height: 1px; background: linear-gradient(90deg, var(--flame), transparent); }
+
+/* --- grana cinematografica ------------------------------------------ */
+.grain {
+  position: fixed;
+  inset: -120px;
+  z-index: 60;
+  pointer-events: none;
+  background-image: url('/img/grain.png');
+  background-size: 180px 180px;
+  opacity: 0.052;
+  mix-blend-mode: overlay;
+  will-change: transform;
+  animation: grain-shift 0.7s steps(1) infinite;
+}
+@keyframes grain-shift {
+  0%   { transform: translate3d(0, 0, 0); }
+  20%  { transform: translate3d(-24px, 14px, 0); }
+  40%  { transform: translate3d(18px, -22px, 0); }
+  60%  { transform: translate3d(-12px, -8px, 0); }
+  80%  { transform: translate3d(26px, 18px, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+/* --- scena WebGL ----------------------------------------------------- */
+.stage {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+.stage canvas { width: 100%; height: 100%; display: block; }
+
+.stage__fallback {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 1.2s var(--ease);
+}
+/* Senza WebGL mostriamo il fermo immagine al posto della scena, con lo stesso
+   velo che nella versione 3D fa la scena stessa: il testo resta leggibile. */
+.no-webgl .stage__fallback { opacity: 0.7; }
+.no-webgl .stage canvas { display: none; }
+.no-webgl .stage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    rgba(10, 10, 11, 0.95) 0%,
+    rgba(10, 10, 11, 0.82) 40%,
+    rgba(10, 10, 11, 0.4) 72%,
+    rgba(10, 10, 11, 0.6) 100%
+  );
+}
+
+/* --- cursore custom -------------------------------------------------- */
+.cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 90;
+  pointer-events: none;
+  mix-blend-mode: difference;
+}
+.cursor__ring,
+.cursor__dot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+}
+.cursor__ring {
+  width: 42px;
+  height: 42px;
+  margin: -21px 0 0 -21px;
+  border: 1px solid rgba(245, 245, 247, 0.55);
+  display: grid;
+  place-items: center;
+  transition: width var(--d-fast) var(--ease), height var(--d-fast) var(--ease),
+              margin var(--d-fast) var(--ease), border-color var(--d-fast) var(--ease),
+              background-color var(--d-fast) var(--ease);
+}
+.cursor__dot {
+  width: 5px;
+  height: 5px;
+  margin: -2.5px 0 0 -2.5px;
+  background: var(--ink);
+}
+.cursor__label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: 0;
+  transition: opacity var(--d-fast) var(--ease);
+  white-space: nowrap;
+}
+.cursor.is-active .cursor__ring {
+  width: 92px;
+  height: 92px;
+  margin: -46px 0 0 -46px;
+  border-color: rgba(245, 245, 247, 0.9);
+  background: rgba(245, 245, 247, 0.06);
+}
+.cursor.is-active .cursor__label { opacity: 1; }
+.cursor.is-active .cursor__dot { opacity: 0; }
+.cursor.is-down .cursor__ring { transform: translate(-50%, -50%) scale(0.82); }
+
+/* Il cursore custom esiste solo dove c'è un vero puntatore. */
+@media (hover: hover) and (pointer: fine) {
+  body.has-cursor, body.has-cursor * { cursor: none !important; }
+  /* Un <dialog> modale vive nel top layer, sopra il cursore custom: mentre è
+     aperto torniamo al puntatore di sistema, altrimenti non si vedrebbe nulla. */
+  body.has-legal, body.has-legal * { cursor: auto !important; }
+  body.has-legal .cursor { opacity: 0; }
+  body.has-legal a, body.has-legal button, body.has-legal summary { cursor: pointer !important; }
+}
+@media not all and (hover: hover) { .cursor { display: none; } }
+
+/* --- preloader ------------------------------------------------------- */
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: var(--carbon);
+}
+.preloader__inner {
+  width: min(680px, 82vw);
+  text-align: center;
+}
+.preloader__mark {
+  font-family: var(--display);
+  font-size: clamp(2.6rem, 9vw, 6.5rem);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  display: flex;
+  justify-content: center;
+}
+.preloader__letter {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.55em);
+}
+.preloader__meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 1.4rem;
+  font-size: var(--fs-small);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--muted-dim);
+}
+.preloader__count { font-family: var(--display); font-size: 1.5rem; color: var(--flame); letter-spacing: 0; }
+.preloader__bar {
+  margin-top: 0.7rem;
+  height: 1px;
+  background: var(--hair);
+  overflow: hidden;
+}
+.preloader__bar i {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--flame-deep), var(--flame));
+  box-shadow: 0 0 18px rgba(255, 90, 31, 0.75);
+}
+.preloader__curtain {
+  position: absolute;
+  inset: 0;
+  background: var(--carbon);
+  transform-origin: top;
+}
+.is-loading { overflow: hidden; }
+
+/* --- reduced motion --------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .grain { animation: none; }
+  .cursor { display: none; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.12s !important;
+    scroll-behavior: auto !important;
+  }
+}
