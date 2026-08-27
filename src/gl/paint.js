@@ -17,9 +17,13 @@ export function createPaintMaterial({
 } = {}) {
   const uniforms = {
     uTime: { value: 0 },
-    // x: posizione della lama nello spazio locale, y: larghezza, z: intensità
+    // x: posizione della lama in coordinate mondo, y: larghezza, z: intensità
     uSweep: { value: new THREE.Vector3(-99, 0.34, 0) },
-    uFlake: { value: flake }
+    uFlake: { value: flake },
+    // Fiocchi per unità di scena. Un modello importato può essere modellato
+    // in centimetri: lo shader se ne accorge da solo (vedi vToWorld) e la
+    // grana resta identica su qualsiasi modello.
+    uFlakeDensity: { value: 260 }
   };
 
   const material = new THREE.MeshPhysicalMaterial({
@@ -41,13 +45,18 @@ export function createPaintMaterial({
         '#include <common>',
         `#include <common>
          varying vec3 vLocalPos;
-         varying vec3 vWorldNrm;`
+         varying vec3 vWorldPos;
+         varying vec3 vWorldNrm;
+         varying float vToWorld;`
       )
       .replace(
         '#include <begin_vertex>',
         `#include <begin_vertex>
          vLocalPos = position;
-         vWorldNrm = normalize(mat3(modelMatrix) * normal);`
+         vWorldPos = (modelMatrix * vec4(transformed, 1.0)).xyz;
+         vWorldNrm = normalize(mat3(modelMatrix) * normal);
+         // quanto vale un'unità di questa mesh in unità di scena
+         vToWorld = length(modelMatrix[0].xyz);`
       );
 
     shader.fragmentShader = shader.fragmentShader
@@ -55,10 +64,13 @@ export function createPaintMaterial({
         '#include <common>',
         `#include <common>
          varying vec3 vLocalPos;
+         varying vec3 vWorldPos;
          varying vec3 vWorldNrm;
+         varying float vToWorld;
          uniform float uTime;
          uniform vec3 uSweep;
          uniform float uFlake;
+         uniform float uFlakeDensity;
 
          // hash 3D stabile: i fiocchi non "nuotano" quando la camera si muove
          vec3 hash33(vec3 p){
@@ -73,7 +85,7 @@ export function createPaintMaterial({
         '#include <normal_fragment_maps>',
         `#include <normal_fragment_maps>
          {
-           vec3 cell = floor(vLocalPos * 260.0);
+           vec3 cell = floor(vLocalPos * uFlakeDensity * vToWorld);
            vec3 f = hash33(cell) * 2.0 - 1.0;
            float sparkle = step(0.55, hash33(cell + 7.0).x);
            normal = normalize(normal + f * uFlake * (0.35 + sparkle));
@@ -83,7 +95,7 @@ export function createPaintMaterial({
       .replace(
         '#include <tonemapping_fragment>',
         `{
-           float d = abs(vLocalPos.x - uSweep.x) / max(uSweep.y, 0.001);
+           float d = abs(vWorldPos.x - uSweep.x) / max(uSweep.y, 0.001);
            float band = exp(-d * d);
            band *= smoothstep(-0.35, 0.95, vWorldNrm.y);
            gl_FragColor.rgb += band * uSweep.z * vec3(1.0, 0.93, 0.86);
@@ -101,6 +113,10 @@ export function createPaintMaterial({
 /**
  * Pilota il light sweep: un passaggio ogni `period` secondi, con accelerazione
  * in ingresso e dissolvenza in uscita. Da chiamare a ogni frame.
+ *
+ * La lama vive in coordinate mondo, non nello spazio dell'oggetto: così
+ * attraversa allo stesso modo la forma parametrica e un modello importato,
+ * qualunque sia la scala con cui è stato modellato.
  */
 export function updateSweep(uniforms, elapsed, { period = 6, span = 3.6, duration = 1.15 } = {}) {
   const t = elapsed % period;

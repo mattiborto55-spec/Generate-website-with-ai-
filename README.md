@@ -20,12 +20,14 @@ npm run dev       # server di sviluppo su http://localhost:5173
 npm run build     # build di produzione in dist/
 npm run preview   # anteprima della build
 npm run images    # rigenera gli asset visivi in public/img
+npm run model:get # scarica un modello 3D di vettura per la hero
 
 npm run build:single   # dist-single/carbonio.html: tutto in un file solo
 ```
 
-`build:single` produce un unico `.html` da ~3 MB con dentro CSS, JavaScript,
-font e immagini in base64: si apre con un doppio clic, si manda per email e si
+`build:single` produce un unico `.html` con dentro CSS, JavaScript, font,
+immagini e — se c'è — il modello 3D, tutto in base64 (~3 MB senza modello,
+~5,5 MB con): si apre con un doppio clic, si manda per email e si
 carica ovunque, senza server né cartelle. Per il sito in produzione si usa
 `npm run build`, che tiene gli asset separati e quindi in cache.
 
@@ -54,19 +56,35 @@ src/
     env.js                ambiente studio generato a runtime (PMREM)
     paint.js              vernice metallizzata + fiocchi + light sweep
     car.js                carena parametrica, vetri, fanali, ruote
+    model.js              caricamento e adattamento di un modello glTF vero
     stage-props.js        pavimento, riflesso, polvere in sospensione
     cards.js              mini-scene 3D nelle card dei servizi
   js/                     un modulo per comportamento (nav, compare, faq, ...)
 ```
 
-### La scena 3D
+### La vettura
 
-Non c'è nessun modello `.glb` da scaricare: la vettura è una **speed form**,
-la scultura che gli studi di design usano prima del modello definitivo. È una
+La scena accetta **due tipi di vettura** e sceglie da sola.
+
+**Un modello glTF/GLB vero**, se trova `public/models/car.glb`. È l'unico modo
+per avere parabrezza, montanti, griglie, specchietti e cerchi veri: quello che
+distingue un'auto da una scultura. `gl/model.js` lo normalizza — lo orienta,
+lo porta alla lunghezza di scena, lo appoggia a terra — e sostituisce i
+materiali chiave: la carrozzeria prende la vernice del sito, quindi anche
+l'auto importata riceve il light sweep e i fiocchi metallici.
+
+Il modello **non è nel repository**: licenza e marchio della vettura sono una
+scelta di chi pubblica, non una dipendenza da trascinarsi dietro.
+`npm run model:get` ne scarica uno (la Ferrari 458 degli esempi di three.js,
+modello di vicent091036) per vedere subito il risultato. Per usarne un altro
+basta sostituire il file. Il decodificatore Draco non serve copiarlo: three ne
+porta già uno e il bundler lo include.
+
+**La speed form**, quando il modello non c'è o tarda ad arrivare: la scultura
+di stile che gli studi di design fanno prima del modello definitivo. È una
 superficie parametrica costruita in `gl/car.js` — sezione a superellisse
 modulata dal profilo laterale di una sportiva — con proporzioni prese da una
-911 reale e riportate in scala. Vetri, firme luminose e passaruota nascono
-dalla stessa superficie, quindi combaciano sempre.
+911 reale. Non ha vincoli di licenza e non lascia mai la hero vuota.
 
 Il resto della resa viene da:
 
@@ -123,6 +141,7 @@ gli stessi file. Sostituendo le foto vere basta tenere gli stessi nomi in
 | `public/img/` | foto reali dei lavori (stessi nomi file) |
 | `src/js/form.js` | l'invio è simulato: collega il tuo endpoint o un servizio tipo Formspree |
 | `public/img/map.svg` | mappa stilizzata: sostituibile con un embed reale se serve |
+| `public/models/car.glb` | il modello di prova è di marca: usane uno tuo o generico, con licenza verificata |
 
 ---
 

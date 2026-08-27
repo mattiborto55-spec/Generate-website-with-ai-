@@ -12,6 +12,24 @@ import { buildCar } from './car.js';
 import { buildFloor, buildParticles } from './stage-props.js';
 
 /**
+ * Modello 3D della vettura. Se il file esiste, la scena lo usa al posto della
+ * forma parametrica: è l'unico modo per avere parabrezza, montanti, griglie e
+ * specchietti, cioè quello che distingue un'auto vera da una scultura.
+ * Il file non è nel repository — `npm run model:get` lo scarica. Se manca,
+ * non succede niente di male: resta la speed form.
+ */
+const CAR_MODEL_URL = '/models/car.glb';
+
+/**
+ * La build a file unico non ha una cartella public da cui pescare: inietta
+ * qui il modello e il decodificatore Draco come data URI. In tutti gli altri
+ * casi restano i percorsi normali.
+ */
+const ASSETS = typeof window !== 'undefined' ? window.__CARBONIO_ASSETS__ : null;
+const MODEL_URL = ASSETS?.car || CAR_MODEL_URL;
+const DRACO_PATH = ASSETS?.draco || '/draco/';
+
+/**
  * Inquadrature agganciate allo scroll. Ogni sezione ha la sua: la camera
  * orbita attorno alla vettura e stringe sui dettagli mentre il testo cambia.
  * `dim` abbassa l'esposizione dove la pagina è densa di testo, così la scena
@@ -28,6 +46,36 @@ export const SHOTS = {
   interni:   { pos: [0.4, 3.6, 4.2],   target: [0, 0.6, 0],       fov: 34, dim: 0.3,  spin: 0.03,  off: [0.3, 0] },
   outro:     { pos: [6.4, 1.9, 13.5],  target: [0, 0.45, 0],      fov: 40, dim: 0.95, spin: 0.05,  off: [0, -0.25] }
 };
+
+/**
+ * Fondo della scena: lo stesso gradiente radiale appena percettibile che il
+ * CSS metteva dietro la pagina, ora dentro il 3D perché la canvas è opaca.
+ */
+function makeBackdrop() {
+  const size = 512;
+  const c = document.createElement('canvas');
+  c.width = c.height = size;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#0a0a0b';
+  ctx.fillRect(0, 0, size, size);
+
+  const g = ctx.createRadialGradient(size * 0.5, size * 0.12, 0, size * 0.5, size * 0.12, size * 0.9);
+  g.addColorStop(0, 'rgba(20, 20, 24, 1)');
+  g.addColorStop(0.45, 'rgba(15, 15, 18, 1)');
+  g.addColorStop(1, 'rgba(10, 10, 11, 1)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, size, size);
+
+  const warm = ctx.createRadialGradient(size * 0.86, size * 0.86, 0, size * 0.86, size * 0.86, size * 0.6);
+  warm.addColorStop(0, 'rgba(255, 90, 31, 0.06)');
+  warm.addColorStop(1, 'rgba(255, 90, 31, 0)');
+  ctx.fillStyle = warm;
+  ctx.fillRect(0, 0, size, size);
+
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+}
 
 export function isWebGLAvailable() {
   try {
@@ -51,15 +99,20 @@ export class Stage {
     this.renderer = new THREE.WebGLRenderer({
       canvas,
       antialias: !this.mobile,
-      alpha: true,
+      // Canvas opaca. Con il fondo trasparente il bloom finisce anche nei
+      // pixel vuoti — colore con alpha zero — e il browser lo compone come
+      // una velatura chiara su tutta la pagina. Il gradiente che stava nel
+      // CSS ora è il fondo della scena, quindi non si perde niente.
+      alpha: false,
       powerPreference: 'high-performance'
     });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, this.mobile ? 1.6 : 2));
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.15;
-    this.renderer.setClearAlpha(0);
+    this.renderer.setClearColor(0x0a0a0b, 1);
 
     this.scene = new THREE.Scene();
+    this.scene.background = makeBackdrop();
     this.camera = new THREE.PerspectiveCamera(38, 1, 0.1, 120);
 
     this.envMap = buildStudioEnvironment(this.renderer);
@@ -91,7 +144,9 @@ export class Stage {
     this.pointer = new THREE.Vector2(0, 0);      // -1..1
     this.pointerWorld = new THREE.Vector3(999, 999, 0);
     this.tilt = new THREE.Vector2(0, 0);
-    this.spinAngle = 0;
+    // Il muso è modellato verso -X: mezzo giro e la hero, che guarda da +X,
+    // vede il frontale invece della coda.
+    this.spinAngle = Math.PI;
     this.intro = 0; // 0 -> 1 durante l'apertura del sipario
     this.frameScale = 1;
 
@@ -110,9 +165,12 @@ export class Stage {
     this.paint = material;
     this.paintUniforms = uniforms;
 
-    const car = buildCar({ paint: material, quality: this.quality });
-    this.car = car.group;
+    // `car` è un contenitore vuoto che ruota: dentro ci finisce il modello
+    // vero se arriva in tempo, altrimenti la forma parametrica. Così la
+    // rotazione e la parallasse non sanno nemmeno cosa stanno muovendo.
+    this.car = new THREE.Group();
     this.scene.add(this.car);
+    this._populateCar();
 
     // Pavimento a specchio vero: un secondo render dal punto di vista
     // riflesso. Costa un passaggio in più, ma è ciò che rende la scena uno
@@ -141,6 +199,64 @@ export class Stage {
     this.scene.add(dust.points);
   }
 
+  /**
+   * Riempie il contenitore della vettura.
+   *
+   * Il modello vero ha la precedenza, ma non si può lasciare la hero vuota
+   * mentre scarica: se non è pronto entro il tempo del preloader, entra la
+   * forma parametrica e verrà sostituita appena il modello è decodificato.
+   */
+  _populateCar() {
+    let settled = false;
+
+    const useProcedural = () => {
+      if (settled || this.proceduralCar) return;
+      const car = buildCar({ paint: this.paint, quality: this.quality });
+      this.proceduralCar = car;
+      this.car.add(car.group);
+    };
+
+    const timer = setTimeout(useProcedural, 1400);
+
+    this._loadRealCar()
+      .then((model) => {
+        clearTimeout(timer);
+        if (!model) return useProcedural();
+
+        settled = true;
+        if (this.proceduralCar) {
+          this.car.remove(this.proceduralCar.group);
+          this.proceduralCar.group.traverse((o) => {
+            if (o.isMesh) o.geometry?.dispose();
+          });
+          this.proceduralCar.materials.forEach((m) => m.dispose());
+          this.proceduralCar = null;
+        }
+        this.car.add(model.group);
+      })
+      .catch(() => {
+        clearTimeout(timer);
+        useProcedural();
+      });
+  }
+
+  /** Carica il modello glTF, se c'è. Restituisce null quando manca. */
+  async _loadRealCar() {
+    try {
+      // Un data URI risponde solo a GET: la verifica di esistenza serve
+      // unicamente quando il modello è un file servito dal sito.
+      if (!MODEL_URL.startsWith('data:')) {
+        const res = await fetch(MODEL_URL, { method: 'HEAD' });
+        if (!res.ok) return null;
+      }
+      const { loadCarModel } = await import('./model.js');
+      return await loadCarModel({ url: MODEL_URL, paint: this.paint, dracoPath: DRACO_PATH });
+    } catch (err) {
+      console.warn('[carbonio] modello 3D non caricato, resta la speed form:', err.message);
+      return null;
+    }
+  }
+
   _buildLights() {
     RectAreaLightUniformsLib.init();
     this.lights = [];
@@ -158,7 +274,7 @@ export class Stage {
 
     add(0xffffff, 7.5, 9, 2.4, [-3.4, 5.2, 4.6], 0);
     add(0xdce6ff, 4.2, 8, 2.0, [5.2, 4.2, -3.4], 2.1);
-    if (!this.mobile) add(0xff5a1f, 5.5, 5, 1.6, [4.6, 1.6, 3.2], 4.2);
+    if (!this.mobile) add(0xff5a1f, 3.4, 5, 1.6, [4.6, 1.6, 3.2], 4.2);
 
     this.scene.add(new THREE.AmbientLight(0x20222a, 0.6));
   }
@@ -167,7 +283,8 @@ export class Stage {
     const size = new THREE.Vector2(window.innerWidth, window.innerHeight);
     this.composer = new EffectComposer(this.renderer);
     this.composer.addPass(new RenderPass(this.scene, this.camera));
-    this.bloom = new UnrealBloomPass(size, 0.55, 0.75, 0.82);
+    // soglia alta: fioriscono i fari e i colpi di luce, non la carrozzeria
+    this.bloom = new UnrealBloomPass(size, 0.42, 0.7, 0.9);
     this.composer.addPass(this.bloom);
     this.composer.addPass(new OutputPass());
   }
@@ -264,7 +381,7 @@ export class Stage {
     this.dust.uniforms.uMouse.value.copy(this.camera.position).addScaledVector(dir, dist);
 
     this.renderer.toneMappingExposure = 1.15 * this.now.dim * (0.25 + 0.75 * this.intro);
-    if (this.bloom) this.bloom.strength = 0.55 * this.now.dim;
+    if (this.bloom) this.bloom.strength = 0.42 * this.now.dim;
     this.floor.pool.material.opacity = 0.32 * this.now.dim;
 
     if (this.composer) this.composer.render();

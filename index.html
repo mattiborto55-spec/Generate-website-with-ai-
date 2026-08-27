@@ -80,23 +80,25 @@
       { "@type": "Offer", "priceCurrency": "EUR", "price": "390", "itemOffered": { "@type": "Service", "name": "Restyling Interni", "description": "Rigenerazione pelle, sanificazione all'ozono e ripristino plastiche." } }
     ]
   },
-  "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.9", "reviewCount": "187", "bestRating": "5" },
-  "review": [
-    {
-      "@type": "Review",
-      "author": { "@type": "Person", "name": "Luca M." },
-      "reviewRating": { "@type": "Rating", "ratingValue": "5", "bestRating": "5" },
-      "reviewBody": "Ho lasciato la macchina lunedì e l'ho ripresa venerdì che sembrava appena uscita dalla concessionaria. Sul nero non è rimasto un solo segno."
-    },
-    {
-      "@type": "Review",
-      "author": { "@type": "Person", "name": "Federica T." },
-      "reviewRating": { "@type": "Rating", "ratingValue": "5", "bestRating": "5" },
-      "reviewBody": "Preventivo chiaro in mezza giornata e nessun costo aggiunto alla consegna. Serietà rara."
-    }
-  ]
+  "hasMap": "https://www.google.com/maps/search/?api=1&query=Via+dell%27Industria+46,+41122+Modena"
 }
 </script>
+
+<!--
+  Valutazioni e recensioni nei dati strutturati: volutamente assenti.
+  Google le mostra nei risultati di ricerca, quindi devono corrispondere a
+  recensioni realmente ricevute e visibili sulla pagina; inventarle viola le
+  linee guida e può costare la rimozione dei rich result. Quando hai quelle
+  vere, rimettile qui dentro all'oggetto AutoDetailing:
+
+  "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.9", "reviewCount": "187", "bestRating": "5" },
+  "review": [{
+    "@type": "Review",
+    "author": { "@type": "Person", "name": "Nome del cliente" },
+    "reviewRating": { "@type": "Rating", "ratingValue": "5", "bestRating": "5" },
+    "reviewBody": "Testo della recensione, così com'è stata scritta."
+  }]
+-->
 
 <script type="application/ld+json">
 {

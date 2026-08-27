@@ -5,3 +5,5 @@ dist/
 .vite/
 dist-single/
 .tmp-single/
+public/models/
+public/draco/
