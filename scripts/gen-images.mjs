@@ -587,3 +587,13 @@ console.log('✓ grain.png');
 
 await writeFile(join(OUT, 'map.svg'), darkMap());
 console.log('✓ map.svg');
+
+/* Icona per iOS: Safari non accetta l'SVG come apple-touch-icon, e senza
+   questo file la schermata home mostrerebbe uno screenshot sgranato. */
+const TOUCH_ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
+  <rect width="180" height="180" fill="#0A0A0B"/>
+  <path d="M90 26 31 60v60l59 34 59-34V60z" fill="none" stroke="#FF5A1F" stroke-width="10" stroke-linejoin="round"/>
+  <path d="M90 62 62 78v34l28 16 28-16V78z" fill="none" stroke="#22D3EE" stroke-width="7" stroke-linejoin="round" opacity=".85"/>
+</svg>`;
+await sharp(Buffer.from(TOUCH_ICON)).png({ compressionLevel: 9 }).toFile(join(ROOT, 'public/apple-touch-icon.png'));
+console.log('✓ apple-touch-icon.png');

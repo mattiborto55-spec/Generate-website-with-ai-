@@ -20,6 +20,7 @@ import { initCounters } from './js/counters.js';
 import { initReviews } from './js/reviews.js';
 import { initFaq } from './js/faq.js';
 import { initForm } from './js/form.js';
+import { initLegal } from './js/legal.js';
 import { Stage, isWebGLAvailable } from './gl/index.js';
 
 gsap.registerPlugin(ScrollTrigger, Draggable, InertiaPlugin, Flip, SplitText);
@@ -107,8 +108,16 @@ window.autostop = { get stage() { return stage; }, gsap, ScrollTrigger };
 
 /* --------------------------------------------------- 3. loop unificato */
 
+// Quando un pannello a schermo intero copre la pagina (privacy, cookie) la
+// scena resta ferma: nessuno la sta guardando e i frame servono altrove.
+let overlayOpen = false;
+document.addEventListener('ui:overlay', (e) => {
+  overlayOpen = !!e.detail?.open;
+});
+
 gsap.ticker.add((time, deltaTime) => {
   lenis?.raf(time * 1000);
+  if (overlayOpen) return;
   const dt = deltaTime / 1000;
   stage?.update(dt, time);
   cardScenes?.update(dt, time);
@@ -136,6 +145,7 @@ initCounters({ reducedMotion });
 initReviews();
 initFaq({ reducedMotion });
 initForm();
+initLegal({ lenis, reducedMotion });
 
 $('#year').textContent = new Date().getFullYear();
 

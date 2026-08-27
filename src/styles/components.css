@@ -518,6 +518,20 @@
   font-size: 0.9rem;
 }
 .form__done b { color: var(--volt); }
+.form__done a { color: var(--volt); text-decoration: underline; text-underline-offset: 3px; }
+.form__done.is-error {
+  border-color: rgba(255, 90, 31, 0.45);
+  background: rgba(255, 90, 31, 0.08);
+}
+.form__done.is-error b { color: var(--flame); }
+.form__done.is-error a { color: var(--flame); }
+.form__note a {
+  color: var(--muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color var(--d-fast) var(--ease);
+}
+.form__note a:hover { color: var(--ink); }
 
 /* ----------------------------------------------------------- DOCK MOBILE */
 .dock {

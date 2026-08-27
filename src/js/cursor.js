@@ -9,6 +9,7 @@ const LABELS = {
   chiama: 'Chiama',
   scrivi: 'Scrivi',
   invia: 'Invia',
+  chiudi: 'Chiudi',
   click: 'Vai'
 };
 

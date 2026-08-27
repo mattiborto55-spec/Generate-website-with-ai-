@@ -3,9 +3,16 @@ import { $, $$ } from './utils.js';
 
 /**
  * Form contatti: validazione in italiano, stati di errore animati e conferma
- * animata. Non essendoci backend, l'invio è simulato: collega qui il tuo
- * endpoint (fetch POST) o un servizio tipo Formspree.
+ * animata.
+ *
+ * L'invio ha due modalità, decise dall'attributo `data-endpoint` sul <form>:
+ *   • valorizzato → POST JSON verso quell'indirizzo (Formspree, Web3Forms, una
+ *     funzione serverless, quello che preferisci);
+ *   • vuoto → apre il programma di posta dell'utente con il messaggio già
+ *     compilato verso l'indirizzo dell'officina. Non è un invio finto: la mail
+ *     parte davvero, solo dal client invece che dal server.
  */
+const MAILTO = 'info@autostopmaranello.it';
 const RULES = {
   'f-nome': (v) => (v.trim().length >= 2 ? '' : 'Scrivi il tuo nome.'),
   'f-tel': (v) =>
@@ -65,20 +72,68 @@ export function initForm() {
     }
 
     const btn = form.querySelector('button[type="submit"]');
-    btn.disabled = true;
-    btn.querySelector('span').textContent = 'Invio in corso…';
+    const label = btn.querySelector('span');
+    const data = Object.fromEntries(new FormData(form).entries());
+    const endpoint = form.dataset.endpoint?.trim();
 
-    // Sostituisci questa simulazione con la chiamata al tuo endpoint.
-    setTimeout(() => {
+    btn.disabled = true;
+    label.textContent = 'Invio in corso…';
+
+    const succeed = (message) => {
+      done.innerHTML = message;
       done.hidden = false;
       gsap.fromTo(done, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.8, ease: 'expo.out' });
-      gsap.to($$('.field, .check', form), {
-        opacity: 0.35,
-        duration: 0.6,
-        ease: 'power2.out'
-      });
-      btn.querySelector('span').textContent = 'Richiesta inviata';
+      gsap.to($$('.field, .check', form), { opacity: 0.35, duration: 0.6, ease: 'power2.out' });
+      label.textContent = 'Richiesta inviata';
       form.reset();
-    }, 900);
+    };
+
+    const fail = (message) => {
+      done.innerHTML = message;
+      done.hidden = false;
+      done.classList.add('is-error');
+      gsap.fromTo(done, { opacity: 0, y: 16 }, { opacity: 1, y: 0, duration: 0.6, ease: 'expo.out' });
+      btn.disabled = false;
+      label.textContent = 'Riprova';
+    };
+
+    if (endpoint) {
+      fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(data)
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error(res.status);
+          succeed('<b>Richiesta inviata.</b> Ti richiamiamo al numero che ci hai lasciato.');
+        })
+        .catch(() =>
+          fail(
+            `<b>Invio non riuscito.</b> Chiama lo <a href="tel:+390536944190">0536 944190</a> o scrivi a <a href="mailto:${MAILTO}">${MAILTO}</a>.`
+          )
+        );
+      return;
+    }
+
+    // Senza endpoint: il messaggio viene composto e passato al client di posta.
+    const body = [
+      `Nome: ${data.nome || ''}`,
+      `Telefono: ${data.telefono || ''}`,
+      `Auto: ${data.auto || ''}`,
+      `Servizio: ${data.servizio || ''}`,
+      '',
+      data.messaggio || '(nessun messaggio)',
+      '',
+      '— Richiesta inviata dal sito di Autofficina Autostop'
+    ].join('\n');
+
+    const href = `mailto:${MAILTO}?subject=${encodeURIComponent(
+      `Richiesta dal sito — ${data.servizio || 'informazioni'}`
+    )}&body=${encodeURIComponent(body)}`;
+
+    window.location.href = href;
+    succeed(
+      '<b>Richiesta pronta.</b> Si è aperto il tuo programma di posta con il messaggio già scritto: controlla e premi invia.'
+    );
   });
 }

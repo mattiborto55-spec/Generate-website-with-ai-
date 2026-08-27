@@ -275,6 +275,11 @@ button, input, select, textarea { font: inherit; color: inherit; }
 /* Il cursore custom esiste solo dove c'è un vero puntatore. */
 @media (hover: hover) and (pointer: fine) {
   body.has-cursor, body.has-cursor * { cursor: none !important; }
+  /* Un <dialog> modale vive nel top layer, sopra il cursore custom: mentre è
+     aperto torniamo al puntatore di sistema, altrimenti non si vedrebbe nulla. */
+  body.has-legal, body.has-legal * { cursor: auto !important; }
+  body.has-legal .cursor { opacity: 0; }
+  body.has-legal a, body.has-legal button, body.has-legal summary { cursor: pointer !important; }
 }
 @media not all and (hover: hover) { .cursor { display: none; } }
 

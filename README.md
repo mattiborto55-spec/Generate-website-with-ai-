@@ -5,8 +5,9 @@ scena 3D real-time in WebGL, camera agganciata allo scroll, motion design
 cinematografico. Tutto statico, nessun backend richiesto.
 
 I dati dell'attività in pagina sono quelli reali: ragione sociale, indirizzo,
-telefono, P.IVA, REA, PEC, orari, servizi e recensioni Google. Resta qualcosa
-da completare prima di pubblicare — vedi [Prima di pubblicare](#prima-di-pubblicare).
+telefono, email, P.IVA, REA, PEC, orari, servizi e recensioni Google. Resta
+qualcosa da decidere prima di pubblicare — vedi
+[Prima di pubblicare](#prima-di-pubblicare).
 
 ---
 
@@ -105,6 +106,27 @@ Il resto della resa viene da:
 
 Per rifinire un'inquadratura dal browser: `autostop.stage.setShot('gomme')`.
 
+### Modulo dei contatti
+
+L'invio ha due modalità, decise dall'attributo `data-endpoint` sul `<form>`:
+
+- **vuoto** (com'è ora): il pulsante compone la mail — nome, telefono, auto,
+  servizio, messaggio — e la apre nel programma di posta dell'utente, già
+  indirizzata a `info@autostopmaranello.it`. Non parte nulla verso terzi e non
+  serve alcun backend;
+- **valorizzato** con l'indirizzo di un servizio di invio (Formspree,
+  Web3Forms, una funzione serverless): il modulo fa una `POST` JSON e mostra la
+  conferma, o l'errore con telefono ed email come via alternativa.
+
+### Note legali
+
+Privacy e cookie sono due pannelli modali (`<dialog>`) dentro la stessa pagina:
+il browser porta con sé trappola del focus, chiusura con Esc e sfondo inerte.
+Senza JavaScript i link `#privacy` e `#cookie` li mostrano comunque, via
+`:target`. Il testo descrive il sito com'è davvero: nessun cookie, nessun
+analytics, nessuna risorsa esterna, niente salvato nel browser. Se un domani
+verrà aggiunto uno strumento di misurazione, va aggiornato **prima**.
+
 ### Immagini
 
 Niente foto stock: `scripts/gen-images.mjs` disegna ogni immagine in SVG
@@ -127,6 +149,7 @@ stessi nomi in `public/img/` — il layout non cambia.
 - Mobile: meno poligoni, meno luci, meno particelle, niente bloom né
   post-processing, DPR limitato, nessun pin orizzontale, tap target da 48px.
 - Contrasto AA, focus visibile, HTML semantico, `<details>` nativo per le FAQ,
+  `<dialog>` nativo per le note legali,
   slider del battistrada pilotabile da tastiera, alt text su tutte le immagini.
 - Font self-hostati e precaricati, immagini in WebP con `loading="lazy"`,
   `three` e `gsap` in chunk separati per la cache.
@@ -137,11 +160,10 @@ stessi nomi in `public/img/` — il layout non cambia.
 
 | Cosa | Dove | Perché |
 | --- | --- | --- |
-| **Dominio** | `index.html`, blocco commentato nel `<head>` | canonical, `og:url` e `og:image` vanno in assoluto, o i social non leggono l'anteprima |
-| **Email** | contatti, footer, JSON-LD | in pagina non c'è: la PEC non è un indirizzo per i clienti |
-| **Invio del form** | `src/js/form.js` | oggi è simulato: collega un endpoint o un servizio tipo Formspree |
-| **Privacy e cookie** | link in fondo | i due link puntano a pagine che non esistono ancora |
-| **Testi del processo** | sezione "Come lavoriamo" | descrivono un modo di lavorare: rileggeteli e correggeteli dove non corrisponde |
+| **Dominio** | `index.html`, blocco commentato nel `<head>`; `public/robots.txt` | canonical, `og:url`, `og:image` assoluto e riga della sitemap: senza dominio restano commentati |
+| **Invio del form** | attributo `data-endpoint` sul `<form>` in `index.html` | vuoto = apre il programma di posta verso `info@autostopmaranello.it`; con un endpoint diventa una POST JSON |
+| **Testi del processo** | sezione "Come lavoriamo" | sono impegni presi con il cliente (preventivo prima, richiamata se salta fuori altro): rileggeteli e correggeteli dove non corrisponde |
+| **Note legali** | pannelli `#privacy` e `#cookie` in `index.html` | il testo c'è ed è aderente a come funziona il sito oggi: va riletto e aggiornato se cambiano strumenti o tempi di conservazione |
 | **Foto vere** | `public/img/` | le illustrazioni reggono, ma le foto dell'officina convertono di più |
 | **Modello 3D** | `public/models/car.glb` | quello di prova è una vettura di marca: verificane licenza e opportunità |
 

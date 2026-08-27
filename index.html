@@ -31,7 +31,7 @@
 <meta name="twitter:card" content="summary_large_image" />
 
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-<link rel="apple-touch-icon" href="/favicon.svg" />
+<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 <link rel="preload" href="/fonts/anton-latin.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="preload" href="/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin />
 
@@ -45,6 +45,7 @@
   "image": "/img/og.jpg",
   "logo": "/favicon.svg",
   "telephone": "+39 0536 944190",
+  "email": "info@autostopmaranello.it",
   "vatID": "IT02838970362",
   "taxID": "02838970362",
   "numberOfEmployees": { "@type": "QuantitativeValue", "value": 5 },
@@ -108,6 +109,10 @@
   ]
 }
 </script>
+
+<!-- Segna che il JavaScript è attivo: serve alle note legali, che senza JS
+     restano raggiungibili con :target e con JS diventano modali. -->
+<script>document.documentElement.classList.add('js');</script>
 
 <script type="module" crossorigin src="/src/main.js"></script>
 </head>
@@ -566,7 +571,13 @@
   </header>
 
   <div class="contact__grid">
-    <form class="form" id="form" novalidate>
+    <!--
+      data-endpoint: lascialo vuoto e il modulo apre il programma di posta con
+      la richiesta già compilata verso info@autostopmaranello.it. Quando avrai
+      un servizio di invio (Formspree, Web3Forms, una funzione serverless),
+      incolla qui il suo indirizzo: il sito farà una POST JSON e basta.
+    -->
+    <form class="form" id="form" novalidate data-endpoint="">
       <div class="field">
         <input type="text" id="f-nome" name="nome" required autocomplete="name" placeholder=" " />
         <label for="f-nome">Nome e cognome</label>
@@ -606,7 +617,7 @@
 
       <label class="check field--full">
         <input type="checkbox" id="f-privacy" name="privacy" required />
-        <span>Ho letto la <a href="#privacy" data-cursor="apri">privacy policy</a> e acconsento al trattamento dei dati.</span>
+        <span>Ho letto la <a href="#privacy" data-legal="privacy" data-cursor="apri">privacy policy</a> e acconsento al trattamento dei dati.</span>
       </label>
       <p class="field__error field--full" data-error-for="f-privacy"></p>
 
@@ -614,7 +625,7 @@
         <span>Invia la richiesta</span>
       </button>
 
-      <p class="form__note field--full">Ti richiamiamo noi. Se hai fretta, il telefono resta la via più corta: 0536 944190.</p>
+      <p class="form__note field--full">Ti richiamiamo noi. Se hai fretta, il telefono resta la via più corta: <a href="tel:+390536944190" data-cursor="chiama">0536 944190</a>. Oppure scrivi a <a href="mailto:info@autostopmaranello.it" data-cursor="scrivi">info@autostopmaranello.it</a>.</p>
       <p class="form__done" id="form-done" role="status" hidden>
         <b>Richiesta inviata.</b> Ti richiamiamo al numero che ci hai lasciato.
       </p>
@@ -630,6 +641,7 @@
         <div><dt>Officina</dt><dd>Via Firenze 56<br />41053 Maranello (MO)</dd></div>
         <div><dt>Orari</dt><dd>Lun—Ven 7:30—13:00<br />e 14:30—19:00<br />Sabato e domenica chiuso</dd></div>
         <div><dt>Telefono</dt><dd><a href="tel:+390536944190" data-cursor="chiama">0536 944190</a></dd></div>
+        <div><dt>Email</dt><dd><a href="mailto:info@autostopmaranello.it" data-cursor="scrivi">info@autostopmaranello.it</a></dd></div>
         <div><dt>Social</dt><dd><a href="https://www.facebook.com/p/Autofficina-Autostop-100084127150411/" target="_blank" rel="noopener" data-cursor="guarda">Facebook</a></dd></div>
       </dl>
 
@@ -653,7 +665,7 @@
     </div>
     <div>
       <p class="footer__label">Contatti</p>
-      <p><a href="tel:+390536944190">0536 944190</a><br /><a href="https://www.google.com/maps/search/?api=1&query=Via+Firenze+56,+41053+Maranello+MO" target="_blank" rel="noopener">Come arrivare</a></p>
+      <p><a href="tel:+390536944190">0536 944190</a><br /><a href="mailto:info@autostopmaranello.it">info@autostopmaranello.it</a><br /><a href="https://www.google.com/maps/search/?api=1&query=Via+Firenze+56,+41053+Maranello+MO" target="_blank" rel="noopener">Come arrivare</a></p>
     </div>
     <div>
       <p class="footer__label">Servizi</p>
@@ -666,9 +678,72 @@
   </div>
   <div class="footer__legal">
     <p>© <span id="year">2026</span> AUTO-STOP S.N.C. di Macchioni Villiam e Zilibotti Marco — P.IVA e C.F. 02838970362 — REA MO-335444 — PEC autostopmaranello@pec.it</p>
-    <p><a href="#privacy" id="privacy">Privacy policy</a> · <a href="#cookie">Cookie</a></p>
+    <p><a href="#privacy" data-legal="privacy" data-cursor="apri">Privacy policy</a> · <a href="#cookie" data-legal="cookie" data-cursor="apri">Cookie</a></p>
   </div>
 </footer>
+
+<!-- ══════════════════════════════════════════ NOTE LEGALI
+     Due pannelli modali: il sito è una pagina sola, e mandare l'utente su
+     un'altra pagina per due paragrafi sarebbe un salto inutile. Senza
+     JavaScript restano raggiungibili via :target (vedi sections.css). -->
+<dialog class="legal" id="privacy" aria-labelledby="privacy-title">
+  <article class="legal__panel">
+    <a class="legal__close" href="#top" aria-label="Chiudi" data-cursor="chiudi">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </a>
+    <p class="kicker">Informativa</p>
+    <h2 class="legal__title" id="privacy-title">Privacy policy</h2>
+    <p class="legal__lead">Informativa ai sensi degli articoli 13 e 14 del Regolamento UE 2016/679 (GDPR). In breve: raccogliamo solo quello che ci scrivi tu, per richiamarti. Niente altro.</p>
+
+    <h3>Chi tratta i dati</h3>
+    <p>Titolare del trattamento è <b>AUTO-STOP S.N.C. di Macchioni Villiam e Zilibotti Marco</b>, Via Firenze 56, 41053 Maranello (MO), P.IVA e C.F. 02838970362. Telefono 0536 944190, email <a href="mailto:info@autostopmaranello.it">info@autostopmaranello.it</a>, PEC autostopmaranello@pec.it.</p>
+
+    <h3>Quali dati raccogliamo</h3>
+    <p>Solo i dati che inserisci nel modulo dei contatti: nome e cognome, numero di telefono, marca e modello dell'auto, il servizio che ti serve e l'eventuale messaggio. Il sito non usa analytics, non profila nessuno e non registra la navigazione.</p>
+
+    <h3>Perché li trattiamo</h3>
+    <p>Per rispondere alla tua richiesta, darti un'indicazione di massima e fissare l'appuntamento. La base giuridica è l'esecuzione di misure precontrattuali richieste da te (art. 6.1.b GDPR); il consenso che spunti nel modulo riguarda il ricontatto.</p>
+
+    <h3>Per quanto tempo</h3>
+    <p>Il tempo necessario a gestire la richiesta e l'eventuale lavoro sull'auto. I documenti fiscali legati a un intervento restano conservati per i dieci anni previsti dalla legge; le richieste che non diventano un lavoro vengono cancellate entro dodici mesi.</p>
+
+    <h3>A chi li comunichiamo</h3>
+    <p>A nessuno, se non a chi ci serve per lavorare: il fornitore della casella di posta e, quando l'intervento lo richiede (revisione, collaudo bombole), gli enti e i centri autorizzati previsti dalla normativa. Non vendiamo e non cediamo dati a terzi per scopi commerciali.</p>
+
+    <h3>I tuoi diritti</h3>
+    <p>Puoi chiedere in qualsiasi momento di accedere ai tuoi dati, correggerli, cancellarli, limitarne l'uso, opporti al trattamento o riceverli in copia. Basta scrivere a <a href="mailto:info@autostopmaranello.it">info@autostopmaranello.it</a>. Se ritieni che qualcosa non vada, puoi rivolgerti al Garante per la protezione dei dati personali (<a href="https://www.garanteprivacy.it" target="_blank" rel="noopener">garanteprivacy.it</a>).</p>
+
+    <h3>Modulo dei contatti</h3>
+    <p>Finché il modulo non è collegato a un servizio di invio, il pulsante apre il tuo programma di posta con il messaggio già scritto: i dati partono dal tuo indirizzo e arrivano solo a noi, senza passare da nessun servizio esterno.</p>
+
+    <p class="legal__meta">Ultimo aggiornamento: agosto 2026.</p>
+  </article>
+</dialog>
+
+<dialog class="legal" id="cookie" aria-labelledby="cookie-title">
+  <article class="legal__panel">
+    <a class="legal__close" href="#top" aria-label="Chiudi" data-cursor="chiudi">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </a>
+    <p class="kicker">Informativa</p>
+    <h2 class="legal__title" id="cookie-title">Cookie</h2>
+    <p class="legal__lead">Questo sito non usa cookie. Nessuno: né tecnici di terze parti, né statistici, né pubblicitari. Per questo non trovi il solito banner da chiudere.</p>
+
+    <h3>Cosa non c'è</h3>
+    <p>Niente Google Analytics o strumenti simili, niente pixel pubblicitari, niente pulsanti social che ti seguono, nessuna mappa incorporata. Il sito non salva nulla nel tuo browser, nemmeno in <i>local storage</i>.</p>
+
+    <h3>Cosa c'è, invece</h3>
+    <p>Tutto quello che vedi — caratteri tipografici, immagini, modello 3D — è ospitato sullo stesso sito e viene servito senza chiamare server esterni.</p>
+
+    <h3>Quando esci di qui</h3>
+    <p>La mappa e il pulsante “Come arrivare” sono un'immagine e un link: solo se li clicchi apri Google Maps, e da quel momento vale l'informativa di Google. Lo stesso per il collegamento alla pagina Facebook dell'officina.</p>
+
+    <h3>Se un domani cambierà</h3>
+    <p>Se in futuro verranno aggiunti strumenti di misurazione o contenuti di terze parti, questa pagina verrà aggiornata e comparirà una richiesta di consenso prima che qualsiasi cookie venga installato.</p>
+
+    <p class="legal__meta">Ultimo aggiornamento: agosto 2026.</p>
+  </article>
+</dialog>
 
 <!-- barra fissa mobile -->
 <div class="dock" aria-label="Azioni rapide">

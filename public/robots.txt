@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.carboniostudio.it/sitemap.xml
+# Quando il dominio sarà attivo, aggiungi qui la riga della sitemap:
+# Sitemap: https://IL-TUO-DOMINIO/sitemap.xml
