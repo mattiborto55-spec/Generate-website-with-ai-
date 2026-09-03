@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Apex Detailing Studio — Detailing, Ceramic Coating e Wrapping a Milano</title>
+<meta name="description" content="Detailing professionale, ceramic coating, PPF e wrapping a Milano. Oltre 500 auto trattate, garanzia 5 anni sul coating. Preventivo gratuito in 24 ore.">
+<meta name="theme-color" content="#0A0A0B">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="canonical" href="https://apexdetailing.it/">
+
+<meta property="og:type" content="website">
+<meta property="og:locale" content="it_IT">
+<meta property="og:title" content="Apex Detailing Studio — La tua auto come il primo giorno">
+<meta property="og:description" content="Ceramic coating, detailing, PPF e wrapping a Milano. Preventivo gratuito in 24 ore.">
+<meta property="og:image" content="og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "AutoDetailing",
+  "name": "Apex Detailing Studio",
+  "image": "https://apexdetailing.it/og-image.svg",
+  "url": "https://apexdetailing.it/",
+  "telephone": "+393512345678",
+  "priceRange": "€€€",
+  "description": "Studio di car detailing, ceramic coating, pellicola PPF e car wrapping a Milano.",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Via della Carrozzeria 18",
+    "addressLocality": "Milano",
+    "postalCode": "20142",
+    "addressCountry": "IT"
+  },
+  "geo": { "@type": "GeoCoordinates", "latitude": 45.4408, "longitude": 9.1583 },
+  "openingHoursSpecification": [
+    { "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"], "opens": "09:00", "closes": "19:00" },
+    { "@type": "OpeningHoursSpecification", "dayOfWeek": "Saturday", "opens": "09:00", "closes": "13:00" }
+  ],
+  "aggregateRating": { "@type": "AggregateRating", "ratingValue": "4.9", "reviewCount": "127", "bestRating": "5" },
+  "areaServed": { "@type": "City", "name": "Milano" },
+  "makesOffer": [
+    { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Ceramic Coating" }, "priceCurrency": "EUR", "price": "690" },
+    { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Detailing Completo" }, "priceCurrency": "EUR", "price": "249" },
+    { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Pellicola PPF" }, "priceCurrency": "EUR", "price": "1200" },
+    { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Car Wrapping" }, "priceCurrency": "EUR", "price": "1800" },
+    { "@type": "Offer", "itemOffered": { "@type": "Service", "name": "Restyling Interni" }, "priceCurrency": "EUR", "price": "199" }
+  ]
+}
+</script>
+</head>
+<body>
+
+<!-- ══════════ PRELOADER ══════════ -->
+<div class="preloader" id="preloader" aria-hidden="true">
+  <div class="preloader__curtain"></div>
+  <div class="preloader__inner">
+    <div class="preloader__logo">
+      <span class="preloader__word" data-biz="nameShort">APEX</span>
+      <span class="preloader__sub">Detailing &amp; Wrapping Studio</span>
+    </div>
+    <div class="preloader__bar"><i></i></div>
+    <div class="preloader__count"><span id="preCount">0</span><small>%</small></div>
+  </div>
+</div>
+
+<!-- ══════════ CURSORE CUSTOM ══════════ -->
+<div class="cursor" id="cursor" aria-hidden="true">
+  <span class="cursor__ring"></span>
+  <span class="cursor__label">GUARDA</span>
+</div>
+
+<a class="skip" href="#servizi">Salta al contenuto</a>
+
+<!-- ══════════ SCENA 3D ══════════ -->
+<div class="stage" id="stage" aria-hidden="true">
+  <canvas id="gl"></canvas>
+  <div class="stage__fallback" id="glFallback"></div>
+  <div class="grain"></div>
+</div>
+
+<!-- ══════════ NAVBAR ══════════ -->
+<header class="nav" id="nav">
+  <div class="nav__inner">
+    <a class="nav__logo" href="#top" aria-label="Torna all'inizio">
+      <span class="nav__mark" aria-hidden="true"></span>
+      <span data-biz="nameShort">APEX</span>
+    </a>
+    <nav class="nav__links" aria-label="Navigazione principale">
+      <a href="#servizi">Servizi</a>
+      <a href="#lavori">Lavori</a>
+      <a href="#processo">Processo</a>
+      <a href="#recensioni">Recensioni</a>
+      <a href="#contatti">Contatti</a>
+    </nav>
+    <a class="btn btn--primary nav__cta" href="#contatti">Prenota un preventivo</a>
+    <button class="nav__burger" id="burger" aria-label="Apri il menu" aria-expanded="false" aria-controls="mobileMenu">
+      <span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<div class="mobile-menu" id="mobileMenu" hidden>
+  <a href="#servizi">Servizi</a>
+  <a href="#lavori">Lavori</a>
+  <a href="#processo">Processo</a>
+  <a href="#recensioni">Recensioni</a>
+  <a href="#faq">FAQ</a>
+  <a href="#contatti">Contatti</a>
+</div>
+
+<main id="top">
+
+  <!-- ══════════ HERO ══════════ -->
+  <section class="hero" id="hero">
+    <div class="hero__content">
+      <p class="eyebrow reveal-line"><span>Studio indipendente · <span data-biz="city">Milano</span></span></p>
+      <h1 class="hero__title">
+        <span class="reveal-line"><span>La tua auto.</span></span>
+        <span class="reveal-line"><span class="accent">Come il primo giorno.</span></span>
+      </h1>
+      <p class="hero__sub reveal-line"><span>Detailing, ceramic coating e wrapping a <span data-biz="city">Milano</span>. Lavoriamo su una sola auto per volta.</span></p>
+      <div class="hero__actions">
+        <a class="btn btn--primary btn--magnetic" href="#contatti">Preventivo gratuito in 24h</a>
+        <a class="btn btn--ghost btn--magnetic" href="#lavori">Guarda i lavori</a>
+      </div>
+    </div>
+    <a class="scroll-hint" href="#servizi" aria-label="Scorri">
+      <span class="scroll-hint__track"><i></i></span>
+      <span class="scroll-hint__text">Scorri</span>
+    </a>
+  </section>
+
+  <!-- ══════════ BARRA DI FIDUCIA ══════════ -->
+  <section class="trust" aria-label="Perché sceglierci">
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee__track">
+        <span>Porsche</span><i>·</i><span>+500 auto trattate</span><i>·</i><span>BMW M</span><i>·</i>
+        <span>Garanzia 5 anni sul coating</span><i>·</i><span>Audi RS</span><i>·</i><span>Prodotti certificati</span><i>·</i>
+        <span>Tesla</span><i>·</i><span>Preventivo in 24h</span><i>·</i><span>Mercedes-AMG</span><i>·</i>
+        <span>Cabina a temperatura controllata</span><i>·</i><span>Alfa Romeo</span><i>·</i>
+      </div>
+      <div class="marquee__track">
+        <span>Porsche</span><i>·</i><span>+500 auto trattate</span><i>·</i><span>BMW M</span><i>·</i>
+        <span>Garanzia 5 anni sul coating</span><i>·</i><span>Audi RS</span><i>·</i><span>Prodotti certificati</span><i>·</i>
+        <span>Tesla</span><i>·</i><span>Preventivo in 24h</span><i>·</i><span>Mercedes-AMG</span><i>·</i>
+        <span>Cabina a temperatura controllata</span><i>·</i><span>Alfa Romeo</span><i>·</i>
+      </div>
+    </div>
+    <p class="sr-only">Trattiamo Porsche, BMW M, Audi RS, Tesla, Mercedes-AMG e Alfa Romeo. Oltre 500 auto trattate, garanzia 5 anni sul coating, prodotti certificati, preventivo in 24 ore.</p>
+  </section>
+
+  <!-- ══════════ SEQUENZA CINEMATOGRAFICA (camera legata allo scroll) ══════════ -->
+  <section class="cinema" id="cinema" aria-label="Dettagli della lavorazione">
+    <div class="cinema__sticky">
+      <div class="cinema__caption" data-shot="0">
+        <p class="cinema__idx">01</p>
+        <h2>Cerchi e freni</h2>
+        <p>Smontati, decontaminati e protetti. Lo sporco di freno non si riattacca più.</p>
+      </div>
+      <div class="cinema__caption" data-shot="1">
+        <p class="cinema__idx">02</p>
+        <h2>Fari e cristalli</h2>
+        <p>Lucidati fino a tornare trasparenti. Più luce di notte, meno anni addosso.</p>
+      </div>
+      <div class="cinema__caption" data-shot="2">
+        <p class="cinema__idx">03</p>
+        <h2>Vernice e cofano</h2>
+        <p>Correzione in più passaggi, poi il coating. Riflessi profondi che durano anni.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ SERVIZI ══════════ -->
+  <section class="section services" id="servizi">
+    <div class="section__head">
+      <p class="eyebrow reveal-line"><span>Servizi</span></p>
+      <h2 class="h2"><span class="reveal-line"><span>Cinque modi di</span></span><span class="reveal-line"><span>proteggere il valore.</span></span></h2>
+      <p class="section__lead reveal-line"><span>Nessun pacchetto preconfezionato: guardiamo l'auto e ti diciamo cosa serve davvero.</span></p>
+    </div>
+
+    <div class="services__grid">
+      <article class="card card--wide" data-tilt>
+        <div class="card__scene" data-icon="coating" aria-hidden="true"></div>
+        <div class="card__body">
+          <p class="card__price">a partire da <strong>690 €</strong></p>
+          <h3>Ceramic Coating</h3>
+          <ul>
+            <li>Protezione fino a 5 anni, certificata</li>
+            <li>Effetto idrorepellente: l'acqua scivola via</li>
+            <li>Brillantezza da vetrina, non da autolavaggio</li>
+          </ul>
+          <a class="link-draw" href="#contatti">Scopri</a>
+        </div>
+      </article>
+
+      <article class="card" data-tilt>
+        <div class="card__scene" data-icon="detailing" aria-hidden="true"></div>
+        <div class="card__body">
+          <p class="card__price">a partire da <strong>249 €</strong></p>
+          <h3>Detailing Completo</h3>
+          <ul>
+            <li>Decontaminazione chimica e meccanica</li>
+            <li>Lucidatura correttiva a step</li>
+            <li>Interni igienizzati in profondità</li>
+          </ul>
+          <a class="link-draw" href="#contatti">Scopri</a>
+        </div>
+      </article>
+
+      <article class="card" data-tilt>
+        <div class="card__scene" data-icon="ppf" aria-hidden="true"></div>
+        <div class="card__body">
+          <p class="card__price">a partire da <strong>1.200 €</strong></p>
+          <h3>Pellicola PPF</h3>
+          <ul>
+            <li>Ferma ghiaia, insetti e graffi leggeri</li>
+            <li>Autorigenerante con il calore</li>
+            <li>Invisibile: nessuno la nota</li>
+          </ul>
+          <a class="link-draw" href="#contatti">Scopri</a>
+        </div>
+      </article>
+
+      <article class="card" data-tilt>
+        <div class="card__scene" data-icon="wrapping" aria-hidden="true"></div>
+        <div class="card__body">
+          <p class="card__price">a partire da <strong>1.800 €</strong></p>
+          <h3>Car Wrapping</h3>
+          <ul>
+            <li>Oltre 200 finiture, anche satinate</li>
+            <li>La vernice originale resta intatta</li>
+            <li>Reversibile quando vuoi</li>
+          </ul>
+          <a class="link-draw" href="#contatti">Scopri</a>
+        </div>
+      </article>
+
+      <article class="card card--tall" data-tilt>
+        <div class="card__scene" data-icon="interni" aria-hidden="true"></div>
+        <div class="card__body">
+          <p class="card__price">a partire da <strong>199 €</strong></p>
+          <h3>Restyling Interni</h3>
+          <ul>
+            <li>Pelle nutrita e protetta dai raggi UV</li>
+            <li>Tessuti lavati a estrazione</li>
+            <li>Odori eliminati all'ozono</li>
+          </ul>
+          <a class="link-draw" href="#contatti">Scopri</a>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ══════════ PRIMA / DOPO ══════════ -->
+  <section class="section ba" id="prima-dopo">
+    <div class="section__head section__head--center">
+      <p class="eyebrow reveal-line"><span>Prima / Dopo</span></p>
+      <h2 class="h2"><span class="reveal-line"><span>Trascina. Questa</span></span><span class="reveal-line"><span>è la differenza.</span></span></h2>
+    </div>
+    <div class="ba__frame" id="baFrame">
+      <div class="ba__img ba__img--before" aria-hidden="true"><span class="ba__tag">Prima</span></div>
+      <div class="ba__img ba__img--after" id="baAfter" aria-hidden="true"><span class="ba__tag ba__tag--right">Dopo</span></div>
+      <div class="ba__handle" id="baHandle"><i></i></div>
+      <label class="sr-only" for="baRange">Confronto prima e dopo la lavorazione</label>
+      <input class="ba__range" id="baRange" type="range" min="0" max="100" value="50" aria-describedby="baHelp">
+    </div>
+    <p class="ba__help" id="baHelp">Cofano nero, luce diretta. A sinistra la vernice opaca con micrograffi, a destra la stessa vernice dopo correzione e coating.</p>
+  </section>
+
+  <!-- ══════════ PROCESSO (scroll orizzontale bloccato) ══════════ -->
+  <section class="process" id="processo">
+    <div class="process__pin">
+      <div class="process__head">
+        <p class="eyebrow">Processo</p>
+        <h2 class="h2">Quattro passaggi.<br>Zero scorciatoie.</h2>
+        <div class="process__progress"><i id="processBar"></i></div>
+      </div>
+      <div class="process__track" id="processTrack">
+        <article class="step">
+          <p class="step__num">01</p>
+          <h3>Analisi e preventivo</h3>
+          <p>Guardiamo l'auto sotto luce diretta e misuriamo lo spessore della vernice. Preventivo chiaro entro 24 ore, senza sorprese in fattura.</p>
+        </article>
+        <article class="step">
+          <p class="step__num">02</p>
+          <h3>Preparazione</h3>
+          <p>Lavaggio a due secchi, decontaminazione ferrosa, clay bar. È la parte che nessuno vede ed è quella che fa la differenza.</p>
+        </article>
+        <article class="step">
+          <p class="step__num">03</p>
+          <h3>Lavorazione</h3>
+          <p>Lucidatura in più passaggi e applicazione in cabina a temperatura controllata. I tempi di posa si rispettano, sempre.</p>
+        </article>
+        <article class="step">
+          <p class="step__num">04</p>
+          <h3>Consegna e garanzia</h3>
+          <p>Ispezione finale con te presente, kit di mantenimento incluso e certificato di garanzia intestato all'auto.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ PORTFOLIO ══════════ -->
+  <section class="section work" id="lavori">
+    <div class="section__head">
+      <p class="eyebrow reveal-line"><span>Lavori</span></p>
+      <h2 class="h2"><span class="reveal-line"><span>Auto uscite</span></span><span class="reveal-line"><span>da qui.</span></span></h2>
+    </div>
+    <div class="work__grid" id="workGrid">
+      <button class="shot shot--a" data-title="Porsche 911 GT3" data-service="Ceramic Coating 5 anni" data-tone="0">
+        <span class="shot__media" aria-hidden="true"></span>
+        <span class="shot__cap"><strong>Porsche 911 GT3</strong><em>Ceramic Coating 5 anni</em></span>
+      </button>
+      <button class="shot shot--b" data-title="BMW M3 Competition" data-service="PPF frontale completo" data-tone="1">
+        <span class="shot__media" aria-hidden="true"></span>
+        <span class="shot__cap"><strong>BMW M3 Competition</strong><em>PPF frontale completo</em></span>
+      </button>
+      <button class="shot shot--c" data-title="Audi RS6 Avant" data-service="Detailing completo" data-tone="2">
+        <span class="shot__media" aria-hidden="true"></span>
+        <span class="shot__cap"><strong>Audi RS6 Avant</strong><em>Detailing completo</em></span>
+      </button>
+      <button class="shot shot--d" data-title="Tesla Model 3" data-service="Wrapping satinato" data-tone="3">
+        <span class="shot__media" aria-hidden="true"></span>
+        <span class="shot__cap"><strong>Tesla Model 3</strong><em>Wrapping satinato</em></span>
+      </button>
+      <button class="shot shot--e" data-title="Mercedes-AMG GT" data-service="Lucidatura correttiva" data-tone="4">
+        <span class="shot__media" aria-hidden="true"></span>
+        <span class="shot__cap"><strong>Mercedes-AMG GT</strong><em>Lucidatura correttiva</em></span>
+      </button>
+      <button class="shot shot--f" data-title="Alfa Romeo Giulia QV" data-service="Cerchi e pinze freno" data-tone="5">
+        <span class="shot__media" aria-hidden="true"></span>
+        <span class="shot__cap"><strong>Alfa Romeo Giulia QV</strong><em>Cerchi e pinze freno</em></span>
+      </button>
+      <button class="shot shot--g" data-title="Range Rover Sport" data-service="Restyling interni in pelle" data-tone="6">
+        <span class="shot__media" aria-hidden="true"></span>
+        <span class="shot__cap"><strong>Range Rover Sport</strong><em>Restyling interni in pelle</em></span>
+      </button>
+      <button class="shot shot--h" data-title="Golf GTI Clubsport" data-service="Coating + PPF parziale" data-tone="7">
+        <span class="shot__media" aria-hidden="true"></span>
+        <span class="shot__cap"><strong>Golf GTI Clubsport</strong><em>Coating + PPF parziale</em></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ══════════ NUMERI ══════════ -->
+  <section class="section stats" aria-label="Numeri">
+    <div class="stats__grid">
+      <div class="stat"><p class="stat__n" data-count="500" data-suffix="+">0</p><p class="stat__l">Auto trattate</p></div>
+      <div class="stat"><p class="stat__n" data-count="12">0</p><p class="stat__l">Anni di esperienza</p></div>
+      <div class="stat"><p class="stat__n" data-count="4.9" data-decimals="1" data-suffix="★">0</p><p class="stat__l">Recensioni su Google</p></div>
+      <div class="stat"><p class="stat__n" data-count="5">0</p><p class="stat__l">Anni di garanzia</p></div>
+    </div>
+  </section>
+
+  <!-- ══════════ RECENSIONI ══════════ -->
+  <section class="section reviews" id="recensioni">
+    <div class="section__head">
+      <p class="eyebrow reveal-line"><span>Recensioni</span></p>
+      <h2 class="h2"><span class="reveal-line"><span>Lo dicono loro,</span></span><span class="reveal-line"><span>non noi.</span></span></h2>
+      <p class="section__lead reveal-line"><span>Trascina per scorrere.</span></p>
+    </div>
+    <div class="reviews__rail" id="reviewsRail" role="group" aria-label="Carosello recensioni">
+      <article class="quote">
+        <p class="quote__stars" aria-label="5 stelle su 5">★★★★★</p>
+        <blockquote>Ho lasciato l'auto il lunedì e non l'ho riconosciuta il giovedì. Il nero è tornato profondo come in concessionaria.</blockquote>
+        <p class="quote__who"><strong>Marco T.</strong><em>Porsche 911 Carrera</em></p>
+      </article>
+      <article class="quote">
+        <p class="quote__stars" aria-label="5 stelle su 5">★★★★★</p>
+        <blockquote>Preventivo chiaro, tempi rispettati, zero sorprese. Mi hanno spiegato ogni passaggio senza provare a vendermi altro.</blockquote>
+        <p class="quote__who"><strong>Giulia R.</strong><em>Audi RS3 Sportback</em></p>
+      </article>
+      <article class="quote">
+        <p class="quote__stars" aria-label="5 stelle su 5">★★★★★</p>
+        <blockquote>Il PPF sul frontale mi ha salvato la vernice in autostrada. Sono i soldi spesi meglio da quando ho l'auto.</blockquote>
+        <p class="quote__who"><strong>Andrea B.</strong><em>Tesla Model Y Performance</em></p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ══════════ FAQ ══════════ -->
+  <section class="section faq" id="faq">
+    <div class="faq__layout">
+      <div class="section__head">
+        <p class="eyebrow reveal-line"><span>Domande</span></p>
+        <h2 class="h2"><span class="reveal-line"><span>Quello che</span></span><span class="reveal-line"><span>ci chiedono.</span></span></h2>
+      </div>
+      <div class="faq__list">
+        <details class="acc">
+          <summary><span>Quanto dura davvero un ceramic coating?</span><i aria-hidden="true"></i></summary>
+          <div class="acc__body"><p>Dai 2 ai 5 anni secondo il prodotto e come tieni l'auto. Ti diamo un certificato di garanzia e un controllo gratuito ogni 12 mesi.</p></div>
+        </details>
+        <details class="acc">
+          <summary><span>Quanti giorni resta ferma l'auto?</span><i aria-hidden="true"></i></summary>
+          <div class="acc__body"><p>Un detailing completo richiede 1-2 giorni. Coating e PPF dai 3 ai 5, perché i tempi di posa e cristallizzazione non si accorciano.</p></div>
+        </details>
+        <details class="acc">
+          <summary><span>Posso lavarla normalmente dopo?</span><i aria-hidden="true"></i></summary>
+          <div class="acc__body"><p>Sì, meglio a mano con shampoo neutro. Evita le spazzole dell'autolavaggio: sono la prima causa dei micrograffi che poi togliamo.</p></div>
+        </details>
+        <details class="acc">
+          <summary><span>Come funziona il prezzo?</span><i aria-hidden="true"></i></summary>
+          <div class="acc__body"><p>Dipende da dimensioni, condizioni della vernice e servizio. I prezzi che vedi sono reali punti di partenza: il preventivo definitivo arriva entro 24 ore, scritto.</p></div>
+        </details>
+        <details class="acc">
+          <summary><span>Fate ritiro e consegna?</span><i aria-hidden="true"></i></summary>
+          <div class="acc__body"><p>Sì, gratis entro 20 km da <span data-biz="city">Milano</span>. Su richiesta usiamo bisarca coperta per auto da collezione.</p></div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ CTA FINALE ══════════ -->
+  <section class="finale" id="finale">
+    <div class="finale__content">
+      <h2 class="finale__title"><span class="reveal-line"><span>Pronto a farla</span></span><span class="reveal-line"><span>tornare nuova?</span></span></h2>
+      <p class="finale__sub reveal-line"><span>Mandaci il modello e due foto. Ti diciamo cosa serve e quanto costa, entro 24 ore.</span></p>
+      <a class="btn btn--primary btn--huge btn--magnetic" href="#contatti">Richiedi il preventivo gratuito</a>
+      <a class="finale__tel" href="tel:+393512345678" data-biz="phoneLink">
+        <span data-biz="phone">+39 351 234 5678</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ══════════ CONTATTI ══════════ -->
+  <section class="section contact" id="contatti">
+    <div class="contact__grid">
+      <div class="contact__form-wrap">
+        <p class="eyebrow">Contatti</p>
+        <h2 class="h2">Parliamo della<br>tua auto.</h2>
+        <form class="form" id="quoteForm" novalidate>
+          <div class="field">
+            <input type="text" id="fName" name="nome" required autocomplete="name" placeholder=" ">
+            <label for="fName">Nome e cognome</label>
+            <p class="field__err" data-err></p>
+          </div>
+          <div class="field">
+            <input type="tel" id="fPhone" name="telefono" required autocomplete="tel" placeholder=" " inputmode="tel">
+            <label for="fPhone">Telefono</label>
+            <p class="field__err" data-err></p>
+          </div>
+          <div class="field">
+            <input type="text" id="fCar" name="auto" required placeholder=" ">
+            <label for="fCar">Marca e modello</label>
+            <p class="field__err" data-err></p>
+          </div>
+          <div class="field field--select">
+            <select id="fService" name="servizio" required>
+              <option value="" selected disabled>Scegli un servizio</option>
+              <option>Ceramic Coating</option>
+              <option>Detailing Completo</option>
+              <option>Pellicola PPF</option>
+              <option>Car Wrapping</option>
+              <option>Restyling Interni</option>
+              <option>Non lo so, consigliatemi</option>
+            </select>
+            <label for="fService">Servizio desiderato</label>
+            <p class="field__err" data-err></p>
+          </div>
+          <div class="field field--full">
+            <textarea id="fMsg" name="messaggio" rows="4" placeholder=" "></textarea>
+            <label for="fMsg">Messaggio (opzionale)</label>
+          </div>
+          <button class="btn btn--primary btn--block" type="submit">Invia richiesta</button>
+          <p class="form__note">Ti rispondiamo entro 24 ore, anche su WhatsApp. Nessuna newsletter.</p>
+          <div class="form__done" id="formDone" role="status" aria-live="polite" hidden>
+            <span class="form__check" aria-hidden="true"></span>
+            <p><strong>Richiesta inviata.</strong> Ti chiamiamo entro 24 ore.</p>
+          </div>
+        </form>
+      </div>
+
+      <aside class="contact__side">
+        <div class="map" aria-hidden="true">
+          <svg viewBox="0 0 420 320" preserveAspectRatio="xMidYMid slice" role="presentation">
+            <defs>
+              <linearGradient id="mroad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#2a2a31"/><stop offset="1" stop-color="#1b1b21"/>
+              </linearGradient>
+            </defs>
+            <rect width="420" height="320" fill="#0d0d10"/>
+            <g stroke="url(#mroad)" fill="none" stroke-width="8">
+              <path d="M-20 90 H440"/><path d="M-20 220 H440"/><path d="M90 -20 V340"/><path d="M300 -20 V340"/>
+            </g>
+            <g stroke="#1e1e25" fill="none" stroke-width="3">
+              <path d="M-20 150 H440"/><path d="M180 -20 V340"/><path d="M370 -20 V340"/><path d="M-20 275 H440"/>
+              <path d="M40 -20 V340"/>
+            </g>
+            <g fill="#141419">
+              <rect x="110" y="110" width="50" height="28" rx="2"/><rect x="200" y="105" width="80" height="34" rx="2"/>
+              <rect x="110" y="240" width="52" height="24" rx="2"/><rect x="320" y="170" width="40" height="40" rx="2"/>
+              <rect x="200" y="235" width="86" height="30" rx="2"/><rect x="55" y="170" width="26" height="38" rx="2"/>
+            </g>
+            <path d="M-20 90 H440" stroke="#FF5A1F" stroke-width="1.5" stroke-opacity=".35" fill="none"/>
+            <circle cx="210" cy="160" r="26" fill="#FF5A1F" fill-opacity=".12"/>
+            <circle cx="210" cy="160" r="13" fill="#FF5A1F" fill-opacity=".25"/>
+            <circle cx="210" cy="160" r="5.5" fill="#FF5A1F"/>
+          </svg>
+          <a class="map__link" href="https://www.google.com/maps/search/?api=1&amp;query=Via+della+Carrozzeria+18+Milano" target="_blank" rel="noopener noreferrer" aria-hidden="false">Apri in Google Maps</a>
+        </div>
+        <dl class="info">
+          <div><dt>Indirizzo</dt><dd data-biz="address">Via della Carrozzeria 18, <span data-biz="city">Milano</span></dd></div>
+          <div><dt>Orari</dt><dd>Lun-Ven 9:00-19:00<br>Sabato 9:00-13:00<br>Domenica chiuso</dd></div>
+          <div><dt>Telefono</dt><dd><a href="tel:+393512345678" data-biz="phoneLink"><span data-biz="phone">+39 351 234 5678</span></a></dd></div>
+          <div><dt>WhatsApp</dt><dd><a href="https://wa.me/393512345678" data-biz="waLink" target="_blank" rel="noopener noreferrer">Scrivici ora</a></dd></div>
+          <div><dt>Instagram</dt><dd><a href="https://instagram.com/apexdetailing" data-biz="igLink" target="_blank" rel="noopener noreferrer"><span data-biz="ig">@apexdetailing</span></a></dd></div>
+        </dl>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<!-- ══════════ FOOTER ══════════ -->
+<footer class="footer">
+  <p class="footer__giant" aria-hidden="true"><span data-biz="nameShort">APEX</span></p>
+  <div class="footer__bar">
+    <p class="footer__legal">
+      © <span id="year">2026</span> <span data-biz="name">Apex Detailing Studio</span> · P.IVA <span data-biz="vat">IT 09876543210</span>
+    </p>
+    <nav class="footer__links" aria-label="Link di servizio">
+      <a href="#servizi">Servizi</a><a href="#lavori">Lavori</a><a href="#contatti">Contatti</a>
+      <a href="privacy.html">Privacy</a>
+    </nav>
+  </div>
+</footer>
+
+<!-- ══════════ BARRA MOBILE ══════════ -->
+<div class="dock" aria-label="Contatti rapidi">
+  <a class="dock__btn dock__btn--call" href="tel:+393512345678" data-biz="phoneLink">Chiama ora</a>
+  <a class="dock__btn dock__btn--wa" href="https://wa.me/393512345678" data-biz="waLink" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+</div>
+
+<!-- ══════════ LIGHTBOX ══════════ -->
+<div class="lightbox" id="lightbox" hidden>
+  <button class="lightbox__close" id="lbClose" aria-label="Chiudi">✕</button>
+  <figure class="lightbox__figure" id="lbFigure">
+    <div class="lightbox__media" id="lbMedia"></div>
+    <figcaption><strong id="lbTitle"></strong><em id="lbService"></em></figcaption>
+  </figure>
+</div>
+
+<!-- Librerie servite in locale: il sito funziona anche se una CDN è lenta o bloccata -->
+<script src="assets/vendor/three.min.js"></script>
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/vendor/ScrollTrigger.min.js"></script>
+<script src="assets/vendor/lenis.min.js"></script>
+<script src="assets/js/config.js"></script>
+<script src="assets/js/scene.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
