@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacy — Apex Detailing Studio</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .legal { max-width: 46rem; margin: 0 auto; padding: clamp(5rem, 14vh, 9rem) var(--gutter); }
+  .legal h1 { font-family: var(--display); font-weight: 400; text-transform: uppercase;
+              letter-spacing: -.03em; font-size: clamp(2.2rem, 7vw, 4rem); margin: 0 0 2.5rem; }
+  .legal h2 { font-family: var(--display); font-weight: 400; text-transform: uppercase;
+              letter-spacing: -.02em; font-size: 1.35rem; margin: 2.6rem 0 .9rem; }
+  .legal a.back { display: inline-block; margin-bottom: 2rem; font-size: .74rem;
+                  letter-spacing: .18em; text-transform: uppercase; color: var(--orange); }
+  .legal li { color: var(--muted); padding-left: 1.3rem; position: relative; margin-bottom: .5rem; }
+  .legal li::before { content: ''; position: absolute; left: 0; top: .62em; width: 6px; height: 1px; background: var(--orange); }
+</style>
+</head>
+<body class="is-ready">
+<main class="legal">
+  <a class="back" href="index.html">← Torna al sito</a>
+  <h1>Informativa privacy</h1>
+
+  <p>Questa pagina spiega come <strong><span data-biz="name">Apex Detailing Studio</span></strong> tratta i dati che ci lasci quando chiedi un preventivo.</p>
+
+  <h2>Chi tratta i dati</h2>
+  <p>Titolare del trattamento è <span data-biz="name">Apex Detailing Studio</span>, <span data-biz="address">Via della Carrozzeria 18, Milano</span>, P.IVA <span data-biz="vat">IT 09876543210</span>. Per qualsiasi richiesta puoi scriverci o chiamarci al <a href="tel:+393512345678" data-biz="phoneLink"><span data-biz="phone">+39 351 234 5678</span></a>.</p>
+
+  <h2>Quali dati raccogliamo</h2>
+  <ul>
+    <li>Nome e cognome, numero di telefono</li>
+    <li>Marca e modello dell'auto e servizio richiesto</li>
+    <li>Il testo del messaggio che ci scrivi, se lo compili</li>
+  </ul>
+  <p>Non usiamo cookie di profilazione e non c'è alcun tracciamento pubblicitario su questo sito.</p>
+
+  <h2>Perché li usiamo</h2>
+  <p>Solo per prepararti il preventivo e ricontattarti. Base giuridica: la tua richiesta esplicita, cioè l'esecuzione di misure precontrattuali (art. 6.1.b GDPR).</p>
+
+  <h2>Per quanto tempo</h2>
+  <p>Conserviamo la richiesta per 24 mesi, poi la cancelliamo. Se diventi cliente, i dati fiscali restano per i termini di legge.</p>
+
+  <h2>A chi li comunichiamo</h2>
+  <p>A nessuno per finalità commerciali. Il messaggio del form viene inoltrato tramite WhatsApp (Meta Platforms Ireland Ltd.) perché è il canale con cui ci scrivi: vale la privacy policy di WhatsApp per quel passaggio.</p>
+
+  <h2>I tuoi diritti</h2>
+  <p>Puoi chiederci in qualsiasi momento accesso, rettifica, cancellazione, limitazione o portabilità dei tuoi dati, e opporti al trattamento. Basta una chiamata o un messaggio. Puoi anche rivolgerti al Garante per la protezione dei dati personali.</p>
+
+  <p style="margin-top:3rem"><a class="link-draw" href="index.html">Torna al sito</a></p>
+</main>
+<script src="assets/js/config.js"></script>
+<script>
+/* Riusa la configurazione del sito: nome, indirizzo e telefono restano allineati. */
+(function () {
+  var B = window.BUSINESS; if (!B) return;
+  var digits = (B.phone || '').replace(/[^\d+]/g, '');
+  var v = { name: B.name, phone: B.phone, vat: B.vat, city: B.city,
+            address: B.street ? B.street + ', ' + B.city : B.city };
+  Object.keys(v).forEach(function (k) {
+    document.querySelectorAll('[data-biz="' + k + '"]').forEach(function (el) { el.textContent = v[k]; });
+  });
+  document.querySelectorAll('[data-biz="phoneLink"]').forEach(function (el) { el.href = 'tel:' + digits; });
+  document.title = 'Privacy — ' + B.name;
+})();
+</script>
+</body>
+</html>
